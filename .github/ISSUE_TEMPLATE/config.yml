@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/hkyss/sonar/security
+    about: Report it privately, not as an issue.
+  - name: Writing your own integration
+    url: https://github.com/hkyss/sonar/blob/dev/docs/integrations.md
+    about: The calls an integration makes, with a worked example.

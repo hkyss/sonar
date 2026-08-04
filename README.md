@@ -1,29 +1,57 @@
 # Sonar
 
-Request performance overlay for PHP applications. Renders a small pill in the corner of the page: database queries, server timings, browser metrics, and every XHR/fetch the page makes with its own server-side query count.
+[![ci](https://github.com/hkyss/sonar/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/hkyss/sonar/actions/workflows/ci.yml)
+[![php](https://img.shields.io/badge/php-8.1%20%E2%80%93%208.4-777bb4)](composer.json)
+[![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-- Framework-agnostic core, integrations for Laravel, Evolution CMS 3, PSR-15 and plain PDO.
-- No dependencies, no build step, no published assets: CSS and JS are inlined before `</body>`.
-- Off by default; when off, nothing is collected and nothing is rendered.
+Request performance overlay for PHP. A pill in the corner of the page reports
+what the request cost: database queries, server timings, browser metrics, and
+every XHR and fetch the page makes with its own server-side query count.
+
+<img src=".github/media/overlay.png" alt="The overlay open on a page, showing server timings, browser metrics, three tracked requests and a repeated query" width="470">
+
+- Framework-agnostic core. Integrations for Laravel, Evolution CMS 3, PSR-15 and plain PDO.
+- No runtime dependencies, no build step, no published assets: the CSS and the JS are inlined before `</body>`.
+- Off by default. While off, nothing is collected and nothing is rendered.
+- Statements are stored as fingerprints, so bind values never reach the page.
 
 ## Install
 
+Not on Packagist yet, so point Composer at the repository:
+
+```json
+{
+  "repositories": [
+    { "type": "vcs", "url": "https://github.com/hkyss/sonar" }
+  ]
+}
+```
+
 ```bash
-composer require --dev hkyss/sonar
+composer require --dev hkyss/sonar:^0.2
 ```
 
 ## Enable
 
-`SONAR` accepts `false` (off), `true` (visible to everyone — local only) or `gated` (collected always, shown only to whoever the gate allows).
+`SONAR` takes `false` (off), `true` (visible to everyone) or `gated` (collected
+always, shown only to whoever the gate allows).
 
 ```dotenv
 SONAR=true
 SONAR_MAX_QUERIES=200
 ```
 
+Two settings refuse to do the dangerous thing:
+
+- `true` is ignored when the environment is production, because it shows the
+  overlay to anonymous visitors. To look at a live site, use `gated`.
+- `gated` without a gate is off. There is no default gate to fall back on.
+
 ## Laravel
 
-The service provider is auto-discovered. It listens for `QueryExecuted`, attaches `SonarMiddleware` to every matched route, injects the overlay into HTML responses and adds `X-Sonar-*` headers to the rest.
+The service provider is auto-discovered. It listens for `QueryExecuted`,
+attaches `SonarMiddleware` to every matched route, injects the overlay into HTML
+responses and adds `X-Sonar-*` headers to the rest.
 
 ```bash
 php artisan vendor:publish --tag=sonar-config
@@ -38,41 +66,56 @@ return [
 ];
 ```
 
-With `'enabled' => 'gated'` and no `gate`, any authenticated user sees the overlay.
+Under Octane the provider hooks `RequestReceived` to open each request. Nothing
+to configure.
 
 ## Evolution CMS 3
 
-Register the EVO provider instead of the Laravel one — it injects through `OnWebPagePrerender`, which also covers pages served from the EVO page cache, and gates on a manager login.
+Register the EVO provider instead of the Laravel one. It injects through
+`OnWebPagePrerender`, which also covers pages served from the EVO page cache,
+and gates on a manager login.
 
 ```php
 // core/custom/config/app/providers/SonarServiceProvider.php
-<?php return \Sonar\Integration\Evolution\SonarEvolutionServiceProvider::class;
+<?php return \Hkyss\Sonar\Integration\Evolution\SonarEvolutionServiceProvider::class;
 ```
 
-Set `SONAR=gated` in `core/custom/.env` or in the web server environment (`env[SONAR]` in the php-fpm pool, `SetEnv SONAR gated` for mod_php).
+Set `SONAR=gated` in `core/custom/.env` or in the web server environment
+(`env[SONAR]` in the php-fpm pool, `SetEnv SONAR gated` for mod_php).
 
-Queries are split into two sources. EVO 3.1 runs its legacy `evo()->db` API on an Illuminate connection but calls `logQuery()` with **seconds** where Illuminate reports **milliseconds**; the integration tells the two apart by `Connection::beforeExecuting`, which only fires for Illuminate-driven queries, and normalises the legacy timings. `evo()->executedQueries` is not used — EVO never increments it.
+Queries arrive from two places. EVO 3.1 runs its legacy `evo()->db` API on an
+Illuminate connection but calls `logQuery()` with **seconds** where Illuminate
+reports **milliseconds**. The integration tells them apart through
+`Connection::beforeExecuting`, which only fires for Illuminate-driven queries,
+and normalises the legacy timings. `evo()->executedQueries` is not used — EVO
+never increments it.
 
-Registration is idempotent: a package chain where several providers extend one another and each registers Sonar wires the listeners once.
+Registration is idempotent: a package chain where several providers extend one
+another and each registers Sonar wires the listeners once.
 
 ## PSR-15
 
 ```php
-use Sonar\Config;
-use Sonar\Integration\Psr15\SonarMiddleware;
-use Sonar\Sonar;
+use Hkyss\Sonar\Config;
+use Hkyss\Sonar\Integration\Psr15\SonarMiddleware;
+use Hkyss\Sonar\Sonar;
 
 Sonar::boot(Config::fromEnv());
 
 $pipeline->pipe(new SonarMiddleware($streamFactory));
 ```
 
+The middleware opens a new request on the way in, which is what keeps the
+figures per-request under RoadRunner, Swoole and friends. Mount it first. If it
+has to sit behind other middleware, pass `new SonarMiddleware($factory, false)`
+and call `Sonar::start()` yourself at the real request boundary.
+
 ## Plain PHP
 
 ```php
-use Sonar\Config;
-use Sonar\Integration\Pdo\TracingPdo;
-use Sonar\Sonar;
+use Hkyss\Sonar\Config;
+use Hkyss\Sonar\Integration\Pdo\TracingPdo;
+use Hkyss\Sonar\Sonar;
 
 Sonar::boot(Config::fromValue(true));
 
@@ -86,48 +129,72 @@ echo Sonar::inject($html);
 | Call | Purpose |
 | --- | --- |
 | `Sonar::boot(?Config)` | Start collecting; returns `null` when disabled |
+| `Sonar::start(?Config)` | Open a new request: drop what was collected, restart the clock |
 | `Sonar::record($sql, $ms, $source)` | Log one statement |
 | `Sonar::add($source, $count, $ms)` | Log totals for a source that cannot report statements |
-| `Sonar::lazy($source, $resolver)` | Same, resolved at snapshot time |
+| `Sonar::addUsing($source, $resolver)` | Same, resolved at snapshot time |
 | `Sonar::mark($name, $ms)` / `Sonar::timer($name)` | Named timing, e.g. SSR or a template render |
 | `Sonar::meta($key, $value)` | Extra row in the panel; a closure is resolved at snapshot time |
 | `Sonar::snapshot()` | Everything collected, as an array |
 | `Sonar::headers()` | `X-Sonar-*` headers for the current request |
 | `Sonar::inject($html)` | Overlay inserted before `</body>` |
 
-Identical statements are fingerprinted (literals replaced by `?`) and collapsed into one row with a counter, so an N+1 reads as `×40` instead of forty lines.
+Connecting a system Sonar has never heard of is these calls and nothing else —
+see [docs/integrations.md](docs/integrations.md).
 
 ## Reading the overlay
 
 The pill reads the last request the application answered — its round trip and
-its query count — and shows the document's own figures until there has been
-one. On a page that navigates by `fetch`, that makes it the cost of the screen
-just loaded rather than a total that only ever climbs. Running totals across
-every request head the `Requests` section in the panel.
+its query count — and shows the document's own figures until there has been one.
+On a page that navigates by `fetch`, that makes it the cost of the screen just
+loaded rather than a total that only ever climbs. Running totals across every
+request head the `Requests` section in the panel.
 
 | Row | Meaning |
 | --- | --- |
 | `Queries` | Total across all sources, broken down per source |
 | `Database` / `PHP` / `Total` | Wall clock split between SQL and everything else |
 | `Requests` | XHR and fetch calls, each with its own server-side query count from the response headers |
-| `Repeated queries` | Same statement run more than once |
+| `Repeated queries` | The same statement run more than once |
 
-Client metrics (TTFB, DOMContentLoaded, Load, FCP, LCP) come from the Navigation Timing and Performance Observer APIs.
+Identical statements collapse into one row with a counter, so an N+1 reads as
+`×40` rather than forty lines. What is shown is the fingerprint — literals
+replaced by `?` — which is both what makes the grouping meaningful and what
+keeps bind values off the page.
 
-## Notes
+Client metrics (TTFB, DOMContentLoaded, Load, FCP, LCP) come from the Navigation
+Timing and Performance Observer APIs.
 
-- The overlay script is a classic inline script, so it wraps `fetch`/`XHR` before any deferred module bundle runs.
+## Notes and limits
+
+- The overlay script is a classic inline script, so it wraps `fetch` and `XHR`
+  before any deferred module bundle runs.
 - Cross-origin XHR needs `Access-Control-Expose-Headers`; the middlewares set it.
-- `gated` mode still collects on every request. Keep `SONAR` unset in production unless that cost is acceptable.
+- `gated` collects on every request, whether or not anyone can see the result.
+  Keep `SONAR` unset in production unless that cost is acceptable.
+- The Laravel middleware is attached on `RouteMatched`, so a request that
+  matches no route — a 404, most notably — gets neither the overlay nor the
+  headers.
+- Listeners are registered in `register()` rather than `boot()`, on purpose:
+  anything else loses the queries a request runs while the application boots.
 
 ## Development
 
 ```bash
 composer install
-composer test
-composer cs
+composer check
 ```
+
+`composer check` runs the style check, PHPStan and PHPUnit. The overlay script
+has its own suite:
+
+```bash
+npm install
+npm test
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).

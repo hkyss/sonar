@@ -1,0 +1,29 @@
+name: Integration or feature request
+description: A system Sonar should connect to, or something it should report
+labels: [enhancement]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What you want
+      description: The system, or the thing you want on the panel.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reporting
+    attributes:
+      label: How that system reports its work
+      description: |
+        The useful detail for an integration: which event, hook or wrapper hands
+        you a query, and in what unit the timing arrives. Some of them need a
+        trick — Evolution CMS reports seconds where Illuminate reports
+        milliseconds, on the same connection.
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What you tried
+      description: |
+        The facade may already cover it — see docs/integrations.md. If you got
+        part of the way with `Sonar::record()` and friends, say where it stopped.

@@ -1,0 +1,77 @@
+name: Bug report
+description: Something the overlay gets wrong, or does not do at all
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Found something exploitable instead? Do not file it here — use
+        [private vulnerability reporting](https://github.com/hkyss/sonar/security).
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+      description: And what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: The shortest path you have. A failing test is ideal.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Sonar version
+      placeholder: 0.2.0, or a commit sha
+    validations:
+      required: true
+
+  - type: input
+    id: php
+    attributes:
+      label: PHP version
+      placeholder: 8.3.14
+    validations:
+      required: true
+
+  - type: dropdown
+    id: integration
+    attributes:
+      label: Integration
+      options:
+        - Laravel
+        - Evolution CMS 3
+        - PSR-15
+        - Plain PDO
+        - My own
+    validations:
+      required: true
+
+  - type: dropdown
+    id: runtime
+    attributes:
+      label: Runtime
+      description: One process per request, or one that survives between them.
+      options:
+        - PHP-FPM
+        - mod_php
+        - Laravel Octane
+        - Swoole
+        - RoadRunner
+        - FrankenPHP
+        - CLI or queue worker
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: mode
+    attributes:
+      label: SONAR setting
+      placeholder: gated
