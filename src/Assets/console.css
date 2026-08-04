@@ -1,0 +1,130 @@
+#sonar-console {
+  position: fixed;
+  z-index: 2147483000;
+  bottom: 12px;
+  left: 12px;
+  max-width: min(440px, calc(100vw - 24px));
+  font: 11px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: #e6edf3;
+  text-align: left;
+  color-scheme: dark;
+}
+
+#sonar-console * {
+  box-sizing: border-box;
+}
+
+#sonar-console button {
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+#sonar-console .sonar-pill {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 10px;
+  white-space: nowrap;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 35%);
+}
+
+#sonar-console .sonar-pill:hover {
+  border-color: #58a6ff;
+}
+
+#sonar-console .sonar-panel {
+  display: none;
+  max-height: min(70vh, 620px);
+  margin-bottom: 6px;
+  padding: 10px 12px;
+  overflow-y: auto;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgb(0 0 0 / 45%);
+}
+
+#sonar-console.is-open .sonar-panel {
+  display: block;
+}
+
+#sonar-console h4 {
+  margin: 12px 0 4px;
+  color: #8b949e;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#sonar-console h4:first-child {
+  margin-top: 0;
+}
+
+#sonar-console .sonar-row {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  padding: 1px 0;
+}
+
+#sonar-console .sonar-row span:first-child {
+  color: #8b949e;
+}
+
+#sonar-console .sonar-req {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0;
+  border-top: 1px solid #21262d;
+}
+
+#sonar-console .sonar-req-url {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#sonar-console .sonar-sql {
+  padding: 3px 0;
+  color: #adbac7;
+  border-top: 1px solid #21262d;
+  overflow-wrap: anywhere;
+}
+
+#sonar-console .sonar-empty {
+  color: #6e7681;
+}
+
+#sonar-console .sonar-good {
+  color: #3fb950;
+}
+
+#sonar-console .sonar-warn {
+  color: #d29922;
+}
+
+#sonar-console .sonar-bad {
+  color: #f85149;
+}
+
+#sonar-console .sonar-dim {
+  color: #6e7681;
+}
+
+#sonar-console .sonar-close {
+  color: #6e7681;
+}
+
+#sonar-console .sonar-close:hover {
+  color: #f85149;
+}

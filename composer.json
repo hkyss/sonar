@@ -1,0 +1,72 @@
+{
+  "name": "hkyss/sonar",
+  "description": "Request performance overlay: database queries, server timings and client metrics, rendered on the page",
+  "type": "library",
+  "license": "MIT",
+  "keywords": [
+    "debug",
+    "profiler",
+    "performance",
+    "overlay",
+    "laravel",
+    "evolution-cms",
+    "pdo"
+  ],
+  "authors": [
+    {
+      "name": "hkyss",
+      "email": "hkyss.services@protonmail.com"
+    }
+  ],
+  "require": {
+    "php": "^8.1"
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.64",
+    "illuminate/database": "^10.0",
+    "illuminate/events": "^10.0",
+    "illuminate/http": "^10.0",
+    "illuminate/routing": "^10.0",
+    "illuminate/support": "^10.0",
+    "nyholm/psr7": "^1.8",
+    "phpunit/phpunit": "^10.5",
+    "psr/http-factory": "^1.0",
+    "psr/http-server-middleware": "^1.0"
+  },
+  "suggest": {
+    "psr/http-server-middleware": "Required by the PSR-15 integration",
+    "illuminate/support": "Required by the Laravel and Evolution CMS integrations",
+    "psr/http-factory": "Required by the PSR-15 integration"
+  },
+  "autoload": {
+    "psr-4": {
+      "Sonar\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Sonar\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Sonar\\Integration\\Laravel\\SonarServiceProvider"
+      ]
+    }
+  },
+  "scripts": {
+    "test": "phpunit",
+    "cs": "php-cs-fixer fix --dry-run --diff",
+    "cs:fix": "php-cs-fixer fix",
+    "check": [
+      "@cs",
+      "@test"
+    ]
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}
