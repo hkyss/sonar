@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Hkyss\Sonar\Tests;
+namespace hkyss\Sonar\Tests;
 
-use Hkyss\Sonar\Collector;
-use Hkyss\Sonar\Headers;
+use hkyss\Sonar\Collector;
+use hkyss\Sonar\Headers;
 use PHPUnit\Framework\TestCase;
 
 final class HeadersTest extends TestCase

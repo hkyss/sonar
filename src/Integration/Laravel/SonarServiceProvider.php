@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Hkyss\Sonar\Integration\Laravel;
+namespace hkyss\Sonar\Integration\Laravel;
 
-use Hkyss\Sonar\Config;
-use Hkyss\Sonar\Sonar;
+use hkyss\Sonar\Config;
+use hkyss\Sonar\Sonar;
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Events\QueryExecuted;

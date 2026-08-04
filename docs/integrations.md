@@ -10,8 +10,8 @@ There are three jobs, and a system that only does one of them is still useful.
 ## 1. Decide whether to collect
 
 ```php
-use Hkyss\Sonar\Config;
-use Hkyss\Sonar\Sonar;
+use hkyss\Sonar\Config;
+use hkyss\Sonar\Sonar;
 
 Sonar::boot(Config::fromEnv());
 ```
@@ -132,7 +132,7 @@ read them across origins — that is what lets the panel show a query count for 
 cross-origin fetch:
 
 ```php
-use Hkyss\Sonar\Headers;
+use hkyss\Sonar\Headers;
 
 $response->setHeader(
     'Access-Control-Expose-Headers',
@@ -145,10 +145,10 @@ $response->setHeader(
 Roughly what the PSR-15 one does, with the framework parts left generic:
 
 ```php
-use Hkyss\Sonar\Config;
-use Hkyss\Sonar\Headers;
-use Hkyss\Sonar\Overlay;
-use Hkyss\Sonar\Sonar;
+use hkyss\Sonar\Config;
+use hkyss\Sonar\Headers;
+use hkyss\Sonar\Overlay;
+use hkyss\Sonar\Sonar;
 
 final class SonarPlugin
 {
@@ -206,7 +206,7 @@ the collector is off. Anything that renders its own view of the data reads this:
 `queries` is the total across every source; `statements` is the individual
 statements, fingerprinted, grouped and capped at `max_queries` distinct entries
 (`truncated` says whether the cap was hit). The shape is written down as a
-PHPStan type in `Hkyss\Sonar\Collector`, so a static analyser will hold you to it.
+PHPStan type in `hkyss\Sonar\Collector`, so a static analyser will hold you to it.
 
 ## Testing yours
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Hkyss\Sonar;
+namespace hkyss\Sonar;
 
 /**
  * Inline styles, data and script inserted before the closing body tag.

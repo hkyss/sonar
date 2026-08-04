@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Hkyss\Sonar\Integration\Evolution;
+namespace hkyss\Sonar\Integration\Evolution;
 
-use Hkyss\Sonar\Config;
-use Hkyss\Sonar\Integration\Laravel\SonarServiceProvider;
-use Hkyss\Sonar\Sonar;
+use hkyss\Sonar\Config;
+use hkyss\Sonar\Integration\Laravel\SonarServiceProvider;
+use hkyss\Sonar\Sonar;
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;

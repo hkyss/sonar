@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Hkyss\Sonar\Tests\Integration;
+namespace hkyss\Sonar\Tests\Integration;
 
-use Hkyss\Sonar\Integration\Laravel\SonarServiceProvider;
-use Hkyss\Sonar\Sonar;
-use Hkyss\Sonar\Tests\ReadsSnapshots;
+use hkyss\Sonar\Integration\Laravel\SonarServiceProvider;
+use hkyss\Sonar\Sonar;
+use hkyss\Sonar\Tests\ReadsSnapshots;
 use Illuminate\Config\Repository as ConfigRepository;
 use Illuminate\Container\Container;
 use Illuminate\Database\Connection;

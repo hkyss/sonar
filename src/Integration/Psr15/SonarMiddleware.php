@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Hkyss\Sonar\Integration\Psr15;
+namespace hkyss\Sonar\Integration\Psr15;
 
-use Hkyss\Sonar\Headers;
-use Hkyss\Sonar\Overlay;
-use Hkyss\Sonar\Sonar;
+use hkyss\Sonar\Headers;
+use hkyss\Sonar\Overlay;
+use hkyss\Sonar\Sonar;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;

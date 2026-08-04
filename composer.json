@@ -42,18 +42,18 @@
   },
   "autoload": {
     "psr-4": {
-      "Hkyss\\Sonar\\": "src/"
+      "hkyss\\Sonar\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Hkyss\\Sonar\\Tests\\": "tests/"
+      "hkyss\\Sonar\\Tests\\": "tests/"
     }
   },
   "extra": {
     "laravel": {
       "providers": [
-        "Hkyss\\Sonar\\Integration\\Laravel\\SonarServiceProvider"
+        "hkyss\\Sonar\\Integration\\Laravel\\SonarServiceProvider"
       ]
     }
   },

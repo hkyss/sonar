@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Hkyss\Sonar\Integration\Pdo;
+namespace hkyss\Sonar\Integration\Pdo;
 
-use Hkyss\Sonar\Sonar;
+use hkyss\Sonar\Sonar;
 use PDOStatement;
 
 final class TracingStatement extends PDOStatement

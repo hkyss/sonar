@@ -53,7 +53,7 @@ renders. `tests/js/overlay.js` sets that up.
   is off. If a change introduces another ambiguous setting, resolve it the same
   way.
 - **The snapshot is a contract.** Its shape is a PHPStan type in
-  `Hkyss\Sonar\Collector` and it is read by the overlay script, by the headers
+  `hkyss\Sonar\Collector` and it is read by the overlay script, by the headers
   and by anyone integrating a system of their own. Changing it is a breaking
   change and belongs in the changelog.
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Hkyss\Sonar\Integration\Evolution;
+namespace hkyss\Sonar\Integration\Evolution;
 
 /**
  * Tells an Illuminate-driven query from a legacy `evo()->db` one.

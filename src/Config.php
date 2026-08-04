@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Hkyss\Sonar;
+namespace hkyss\Sonar;
 
 use Closure;
 

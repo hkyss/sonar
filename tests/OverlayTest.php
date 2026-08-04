@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Hkyss\Sonar\Tests;
+namespace hkyss\Sonar\Tests;
 
-use Hkyss\Sonar\Collector;
-use Hkyss\Sonar\Overlay;
+use hkyss\Sonar\Collector;
+use hkyss\Sonar\Overlay;
 use PHPUnit\Framework\TestCase;
 
 final class OverlayTest extends TestCase

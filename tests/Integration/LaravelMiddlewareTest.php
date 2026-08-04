@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Hkyss\Sonar\Tests\Integration;
+namespace hkyss\Sonar\Tests\Integration;
 
-use Hkyss\Sonar\Config;
-use Hkyss\Sonar\Integration\Laravel\SonarMiddleware;
-use Hkyss\Sonar\Sonar;
+use hkyss\Sonar\Config;
+use hkyss\Sonar\Integration\Laravel\SonarMiddleware;
+use hkyss\Sonar\Sonar;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;

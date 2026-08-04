@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Hkyss\Sonar\Tests;
+namespace hkyss\Sonar\Tests;
 
-use Hkyss\Sonar\Sonar;
+use hkyss\Sonar\Sonar;
 
 /**
  * Sonar::snapshot() is an empty array while the collector is off, so a test
  * that reads a figure out of it has to say it expected one.
  *
- * @phpstan-import-type SonarSnapshot from \Hkyss\Sonar\Collector
+ * @phpstan-import-type SonarSnapshot from \hkyss\Sonar\Collector
  */
 trait ReadsSnapshots
 {

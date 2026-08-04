@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Hkyss\Sonar\Tests\Integration;
+namespace hkyss\Sonar\Tests\Integration;
 
-use Hkyss\Sonar\Integration\Evolution\QueryOrigin;
+use hkyss\Sonar\Integration\Evolution\QueryOrigin;
 use PHPUnit\Framework\TestCase;
 
 final class QueryOriginTest extends TestCase

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Hkyss\Sonar;
+namespace hkyss\Sonar;
 
 /**
  * Snapshot as response headers, so the overlay can report XHR requests too.

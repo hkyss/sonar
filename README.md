@@ -31,6 +31,11 @@ Not on Packagist yet, so point Composer at the repository:
 composer require --dev hkyss/sonar:^0.2
 ```
 
+The root namespace is `hkyss\Sonar\`, lowercase vendor. PHP resolves class names
+case-insensitively but Composer matches PSR-4 prefixes case-sensitively, so
+`use Hkyss\Sonar\Sonar;` gets you a class that PHP considers the same and the
+autoloader cannot find. Copy the imports as written.
+
 ## Enable
 
 `SONAR` takes `false` (off), `true` (visible to everyone) or `gated` (collected
@@ -77,7 +82,7 @@ and gates on a manager login.
 
 ```php
 // core/custom/config/app/providers/SonarServiceProvider.php
-<?php return \Hkyss\Sonar\Integration\Evolution\SonarEvolutionServiceProvider::class;
+<?php return \hkyss\Sonar\Integration\Evolution\SonarEvolutionServiceProvider::class;
 ```
 
 Set `SONAR=gated` in `core/custom/.env` or in the web server environment
@@ -96,9 +101,9 @@ another and each registers Sonar wires the listeners once.
 ## PSR-15
 
 ```php
-use Hkyss\Sonar\Config;
-use Hkyss\Sonar\Integration\Psr15\SonarMiddleware;
-use Hkyss\Sonar\Sonar;
+use hkyss\Sonar\Config;
+use hkyss\Sonar\Integration\Psr15\SonarMiddleware;
+use hkyss\Sonar\Sonar;
 
 Sonar::boot(Config::fromEnv());
 
@@ -113,9 +118,9 @@ and call `Sonar::start()` yourself at the real request boundary.
 ## Plain PHP
 
 ```php
-use Hkyss\Sonar\Config;
-use Hkyss\Sonar\Integration\Pdo\TracingPdo;
-use Hkyss\Sonar\Sonar;
+use hkyss\Sonar\Config;
+use hkyss\Sonar\Integration\Pdo\TracingPdo;
+use hkyss\Sonar\Sonar;
 
 Sonar::boot(Config::fromValue(true));
 

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Hkyss\Sonar\Tests\Integration;
+namespace hkyss\Sonar\Tests\Integration;
 
-use Hkyss\Sonar\Config;
-use Hkyss\Sonar\Integration\Pdo\TracingPdo;
-use Hkyss\Sonar\Sonar;
-use Hkyss\Sonar\Tests\ReadsSnapshots;
+use hkyss\Sonar\Config;
+use hkyss\Sonar\Integration\Pdo\TracingPdo;
+use hkyss\Sonar\Sonar;
+use hkyss\Sonar\Tests\ReadsSnapshots;
 use PHPUnit\Framework\TestCase;
 
 final class TracingPdoTest extends TestCase

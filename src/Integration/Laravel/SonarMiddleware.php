@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Hkyss\Sonar\Integration\Laravel;
+namespace hkyss\Sonar\Integration\Laravel;
 
 use Closure;
-use Hkyss\Sonar\Headers;
-use Hkyss\Sonar\Overlay;
-use Hkyss\Sonar\Sonar;
+use hkyss\Sonar\Headers;
+use hkyss\Sonar\Overlay;
+use hkyss\Sonar\Sonar;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 

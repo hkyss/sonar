@@ -12,7 +12,7 @@ and all of it lands at once because the package had no users yet.
 
 ### Changed
 
-- The root namespace is `Hkyss\Sonar\`, not `Sonar\`. Claiming a bare top-level
+- The root namespace is `hkyss\Sonar\`, not `Sonar\`. Claiming a bare top-level
   namespace is not something a public package should do.
 - The snapshot renames its keys. `db` — the totals across every source — is now
   `queries`, and `queries` — the individual statements — is now `statements`.
