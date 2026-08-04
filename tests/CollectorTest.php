@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Hkyss\Sonar\Tests;
 
-use PHPUnit\Framework\TestCase;
 use Hkyss\Sonar\Collector;
+use PHPUnit\Framework\TestCase;
 
 final class CollectorTest extends TestCase
 {
@@ -16,12 +16,23 @@ final class CollectorTest extends TestCase
         $collector->record('select * from `pages` where `id` = 34', 2.5);
         $collector->record('select * from `pages` where `id` = 56', 1.0);
 
-        $queries = $collector->topQueries();
+        $statements = $collector->topStatements();
 
-        self::assertCount(1, $queries);
-        self::assertSame(3, $queries[0]['count']);
-        self::assertSame(5.0, $queries[0]['timeMs']);
-        self::assertSame(2.5, $queries[0]['maxMs']);
+        self::assertCount(1, $statements);
+        self::assertSame(3, $statements[0]['count']);
+        self::assertSame(5.0, $statements[0]['timeMs']);
+        self::assertSame(2.5, $statements[0]['maxMs']);
+    }
+
+    public function testKeepsOnlyTheFingerprintOfAStatement(): void
+    {
+        $collector = new Collector();
+        $collector->record("select * from `users` where `email` = 'ada@example.com' and `id` = 7", 1.0);
+
+        $statement = $collector->topStatements()[0]['sql'];
+
+        self::assertSame('select * from `users` where `email` = ? and `id` = ?', $statement);
+        self::assertStringNotContainsString('ada@example.com', json_encode($collector->snapshot()) ?: '');
     }
 
     public function testKeepsDifferentShapesApart(): void
@@ -30,7 +41,7 @@ final class CollectorTest extends TestCase
         $collector->record('select * from `a` where `id` = 1', 1.0);
         $collector->record('select * from `b` where `id` = 1', 1.0);
 
-        self::assertCount(2, $collector->topQueries());
+        self::assertCount(2, $collector->topStatements());
     }
 
     public function testCollapsesInLists(): void
@@ -39,7 +50,7 @@ final class CollectorTest extends TestCase
         $collector->record('select * from `a` where `id` in (1, 2, 3)', 1.0);
         $collector->record('select * from `a` where `id` in (4, 5)', 1.0);
 
-        self::assertCount(1, $collector->topQueries());
+        self::assertCount(1, $collector->topStatements());
     }
 
     public function testKeepsSourcesApart(): void
@@ -50,23 +61,23 @@ final class CollectorTest extends TestCase
 
         $snapshot = $collector->snapshot();
 
-        self::assertCount(2, $snapshot['queries']);
-        self::assertSame(1, $snapshot['db']['sources']['db']['count']);
-        self::assertSame(1, $snapshot['db']['sources']['pdo']['count']);
+        self::assertCount(2, $snapshot['statements']);
+        self::assertSame(1, $snapshot['queries']['sources']['db']['count']);
+        self::assertSame(1, $snapshot['queries']['sources']['pdo']['count']);
     }
 
-    public function testSumsRecordedAggregateAndLazySources(): void
+    public function testSumsRecordedAggregateAndDeferredSources(): void
     {
         $collector = new Collector();
         $collector->record('select 1', 10.0, 'db');
         $collector->add('cache', 3, 5.0);
-        $collector->lazy('evo', static fn (): array => ['count' => 8, 'timeMs' => 50.0]);
+        $collector->addUsing('evo', static fn (): array => ['count' => 8, 'timeMs' => 50.0]);
 
         $snapshot = $collector->snapshot();
 
-        self::assertSame(12, $snapshot['db']['count']);
-        self::assertSame(65.0, $snapshot['db']['timeMs']);
-        self::assertSame(8, $snapshot['db']['sources']['evo']['count']);
+        self::assertSame(12, $snapshot['queries']['count']);
+        self::assertSame(65.0, $snapshot['queries']['timeMs']);
+        self::assertSame(8, $snapshot['queries']['sources']['evo']['count']);
     }
 
     public function testResolvesLazyMetaAtSnapshotTime(): void
@@ -101,7 +112,7 @@ final class CollectorTest extends TestCase
         self::assertGreaterThan(1.0, $collector->snapshot()['marks']['render']);
     }
 
-    public function testStopsStoringDistinctQueriesAtTheCap(): void
+    public function testStopsStoringDistinctStatementsAtTheCap(): void
     {
         $collector = new Collector(null, 2);
         $collector->record('select * from `a`', 1.0);
@@ -110,9 +121,9 @@ final class CollectorTest extends TestCase
 
         $snapshot = $collector->snapshot();
 
-        self::assertCount(2, $snapshot['queries']);
+        self::assertCount(2, $snapshot['statements']);
         self::assertTrue($snapshot['truncated']);
-        self::assertSame(3, $snapshot['db']['count']);
+        self::assertSame(3, $snapshot['queries']['count']);
     }
 
     public function testMeasuresTotalTimeFromTheGivenStart(): void

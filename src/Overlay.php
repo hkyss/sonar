@@ -33,9 +33,9 @@ final class Overlay
             JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
         );
 
-        return "\n<style id=\"sonar-style\">" . $this->asset('console.css') . "</style>\n"
+        return "\n<style id=\"sonar-style\">" . $this->asset('overlay.css') . "</style>\n"
             . '<script type="application/json" id="sonar-data">' . ($payload === false ? '{}' : $payload) . "</script>\n"
-            . '<script id="sonar-script">' . $this->asset('console.js') . "</script>\n";
+            . '<script id="sonar-script">' . $this->asset('overlay.js') . "</script>\n";
     }
 
     public static function isHtml(string $contentType): bool

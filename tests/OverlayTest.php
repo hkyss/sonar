@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Hkyss\Sonar\Tests;
 
-use PHPUnit\Framework\TestCase;
 use Hkyss\Sonar\Collector;
 use Hkyss\Sonar\Overlay;
+use PHPUnit\Framework\TestCase;
 
 final class OverlayTest extends TestCase
 {
@@ -40,12 +40,23 @@ final class OverlayTest extends TestCase
         self::assertSame($once, $twice);
     }
 
-    public function testEscapesAQueryThatWouldCloseTheDataScript(): void
+    public function testEscapesMetadataThatWouldCloseTheDataScript(): void
+    {
+        $collector = new Collector();
+        $collector->meta('template', '</script><script>alert(1)</script>');
+
+        self::assertStringNotContainsString('<script>alert(1)', (new Overlay())->html($collector->snapshot()));
+    }
+
+    public function testAStatementCannotCarryMarkupIntoThePage(): void
     {
         $collector = new Collector();
         $collector->record("select '</script><script>alert(1)</script>'", 1.0);
 
-        self::assertStringNotContainsString('<script>alert(1)', (new Overlay())->html($collector->snapshot()));
+        $html = (new Overlay())->html($collector->snapshot());
+
+        self::assertStringNotContainsString('alert(1)', $html);
+        self::assertStringContainsString('select ?', $html);
     }
 
     public function testShipsTheInlineAssets(): void

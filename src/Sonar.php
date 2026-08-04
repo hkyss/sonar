@@ -22,6 +22,25 @@ final class Sonar
         return self::$collector ??= new Collector(null, $config->maxQueries());
     }
 
+    /**
+     * Opens a new request: drops what was collected and restarts the clock.
+     *
+     * Under PHP-FPM boot() is enough, because the process handles one request
+     * and measures from REQUEST_TIME_FLOAT. Long-running runtimes (Octane,
+     * Swoole, RoadRunner, queue workers) reuse the process, so they have to
+     * call this at every request boundary or the figures keep accumulating.
+     */
+    public static function start(?Config $config = null): ?Collector
+    {
+        self::$config = $config ?? self::$config ?? Config::fromEnv();
+
+        if (!self::$config->collecting()) {
+            return self::$collector = null;
+        }
+
+        return self::$collector = new Collector(microtime(true), self::$config->maxQueries());
+    }
+
     public static function config(): Config
     {
         return self::$config ??= Config::off();
@@ -52,9 +71,9 @@ final class Sonar
         self::$collector?->add($source, $count, $timeMs);
     }
 
-    public static function lazy(string $source, callable $resolver): void
+    public static function addUsing(string $source, callable $resolver): void
     {
-        self::$collector?->lazy($source, $resolver);
+        self::$collector?->addUsing($source, $resolver);
     }
 
     public static function mark(string $name, float $timeMs): void

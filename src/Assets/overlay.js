@@ -81,7 +81,7 @@
       status: status,
       ms: duration,
       queries: number(header(prefix + 'Queries')),
-      dbMs: number(header(prefix + 'Db-Time')),
+      dbMs: number(header(prefix + 'Query-Time')),
       serverMs: number(header(prefix + 'Time')),
     });
 
@@ -255,7 +255,7 @@
    */
   function renderPill() {
     var recent = lastAnswered();
-    var queries = recent ? recent.queries : (server.db || {}).count || 0;
+    var queries = recent ? recent.queries : (server.queries || {}).count || 0;
     var wall = recent ? recent.ms : state.client.load || state.client.dom || (server.time || {}).totalMs;
 
     return (
@@ -280,9 +280,9 @@
   }
 
   function renderServer() {
-    var db = server.db || {};
+    var queries = server.queries || {};
     var time = server.time || {};
-    var sources = db.sources || {};
+    var sources = queries.sources || {};
     var marks = server.marks || {};
     var meta = server.meta || {};
     var breakdown = Object.keys(sources)
@@ -294,10 +294,10 @@
 
     html += row(
       'Queries',
-      (db.count || 0) + (breakdown ? ' <span class="sonar-dim">(' + escapeHtml(breakdown) + ')</span>' : ''),
-      grade(db.count, 40, 100)
+      (queries.count || 0) + (breakdown ? ' <span class="sonar-dim">(' + escapeHtml(breakdown) + ')</span>' : ''),
+      grade(queries.count, 40, 100)
     );
-    html += row('Database', ms(db.timeMs), grade(db.timeMs, 100, 300));
+    html += row('Database', ms(queries.timeMs), grade(queries.timeMs, 100, 300));
     html += row('PHP', ms(time.phpMs), grade(time.phpMs, 300, 800));
     html += row('Total', ms(time.totalMs), grade(time.totalMs, 400, 1000));
     html += row('Memory', ((server.memory || {}).peakMb || 0) + ' MB');
@@ -366,17 +366,17 @@
     return html;
   }
 
-  function renderQueries() {
-    var queries = server.queries || [];
+  function renderStatements() {
+    var statements = server.statements || [];
 
-    if (!queries.length) {
+    if (!statements.length) {
       return '';
     }
 
-    var repeated = queries.filter(function (query) {
-      return query.count > 1;
+    var repeated = statements.filter(function (statement) {
+      return statement.count > 1;
     });
-    var shown = (repeated.length ? repeated : queries).slice(0, 8);
+    var shown = (repeated.length ? repeated : statements).slice(0, 8);
     var html = '<h4>' + (repeated.length ? 'Repeated queries' : 'Queries') + '</h4>';
 
     shown.forEach(function (query) {
@@ -396,7 +396,7 @@
     });
 
     if (server.truncated) {
-      html += '<div class="sonar-empty">list truncated (maxQueries)</div>';
+      html += '<div class="sonar-empty">list truncated (max_queries)</div>';
     }
 
     return html;
@@ -416,7 +416,7 @@
         renderServer() +
         renderClient() +
         renderRequests() +
-        renderQueries() +
+        renderStatements() +
         '</div>' +
         renderPill();
 

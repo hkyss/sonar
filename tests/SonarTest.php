@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Hkyss\Sonar\Tests;
 
-use PHPUnit\Framework\TestCase;
 use Hkyss\Sonar\Config;
 use Hkyss\Sonar\Sonar;
+use PHPUnit\Framework\TestCase;
 
 final class SonarTest extends TestCase
 {
@@ -49,7 +49,7 @@ final class SonarTest extends TestCase
         Sonar::record('select 1', 2.0);
 
         self::assertTrue(Sonar::visible());
-        self::assertSame(1, Sonar::snapshot()['db']['count']);
+        self::assertSame(1, Sonar::snapshot()['queries']['count']);
         self::assertStringContainsString('id="sonar-data"', Sonar::inject('<html><body></body></html>'));
     }
 
@@ -77,7 +77,36 @@ final class SonarTest extends TestCase
         Sonar::record('select 1', 2.0);
         Sonar::boot(Config::fromValue(true));
 
-        self::assertSame(1, Sonar::snapshot()['db']['count']);
+        self::assertSame(1, Sonar::snapshot()['queries']['count']);
+    }
+
+    public function testStartOpensAFreshRequest(): void
+    {
+        Sonar::boot(Config::fromValue(true));
+        Sonar::record('select 1', 2.0);
+
+        Sonar::start();
+
+        self::assertTrue(Sonar::collecting());
+        self::assertSame(0, Sonar::snapshot()['queries']['count']);
+    }
+
+    public function testStartRestartsTheClock(): void
+    {
+        Sonar::boot(Config::fromValue(true));
+        $before = Sonar::snapshot()['time']['totalMs'];
+
+        Sonar::start();
+
+        self::assertLessThanOrEqual($before, Sonar::snapshot()['time']['totalMs']);
+    }
+
+    public function testStartStaysSilentWhileOff(): void
+    {
+        Sonar::boot(Config::off());
+
+        self::assertNull(Sonar::start());
+        self::assertFalse(Sonar::collecting());
     }
 
     public function testReportsHeadersFromTheSnapshot(): void
@@ -89,7 +118,7 @@ final class SonarTest extends TestCase
         $headers = Sonar::headers();
 
         self::assertSame('2', $headers['X-Sonar-Queries']);
-        self::assertSame('10', $headers['X-Sonar-Db-Time']);
+        self::assertSame('10', $headers['X-Sonar-Query-Time']);
         self::assertArrayHasKey('X-Sonar-Time', $headers);
         self::assertArrayHasKey('X-Sonar-Memory', $headers);
     }

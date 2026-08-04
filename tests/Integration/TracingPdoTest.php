@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Hkyss\Sonar\Tests\Integration;
 
-use PHPUnit\Framework\TestCase;
 use Hkyss\Sonar\Config;
 use Hkyss\Sonar\Integration\Pdo\TracingPdo;
 use Hkyss\Sonar\Sonar;
+use PHPUnit\Framework\TestCase;
 
 final class TracingPdoTest extends TestCase
 {
@@ -37,8 +37,8 @@ final class TracingPdoTest extends TestCase
 
         $snapshot = Sonar::snapshot();
 
-        self::assertSame(2, $snapshot['db']['count']);
-        self::assertSame(2, $snapshot['db']['sources']['pdo']['count']);
+        self::assertSame(2, $snapshot['queries']['count']);
+        self::assertSame(2, $snapshot['queries']['sources']['pdo']['count']);
     }
 
     public function testRecordsPreparedStatements(): void
@@ -47,11 +47,11 @@ final class TracingPdoTest extends TestCase
         $statement->execute(['first']);
         $statement->execute(['second']);
 
-        $queries = array_values(array_filter(
-            Sonar::snapshot()['queries'],
-            static fn (array $query): bool => str_starts_with($query['sql'], 'insert')
+        $statements = array_values(array_filter(
+            Sonar::snapshot()['statements'],
+            static fn (array $statement): bool => str_starts_with($statement['sql'], 'insert')
         ));
 
-        self::assertSame(2, $queries[0]['count']);
+        self::assertSame(2, $statements[0]['count']);
     }
 }

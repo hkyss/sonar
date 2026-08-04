@@ -6,17 +6,17 @@ namespace Hkyss\Sonar;
 
 use Closure;
 
-/** Per-request counters: queries, aggregate sources, named timings and metadata. */
+/** Per-request counters: statements, aggregate sources, named timings and metadata. */
 final class Collector
 {
     /** @var array<string, array{sql: string, source: string, count: int, timeMs: float, maxMs: float}> */
-    private array $queries = [];
+    private array $statements = [];
 
     /** @var array<string, array{count: int, timeMs: float}> */
-    private array $counters = [];
+    private array $sources = [];
 
     /** @var array<string, Closure> */
-    private array $lazy = [];
+    private array $deferred = [];
 
     /** @var array<string, float> */
     private array $marks = [];
@@ -28,29 +28,36 @@ final class Collector
 
     private readonly float $startedAt;
 
-    private readonly int $maxQueries;
+    private readonly int $maxStatements;
 
-    public function __construct(?float $startedAt = null, int $maxQueries = 200)
+    public function __construct(?float $startedAt = null, int $maxStatements = 200)
     {
         $this->startedAt = $startedAt ?? (float) ($_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true));
-        $this->maxQueries = max(1, $maxQueries);
+        $this->maxStatements = max(1, $maxStatements);
     }
 
+    /**
+     * Records one statement.
+     *
+     * Only the fingerprint is kept: literals are replaced by `?` before the
+     * statement is stored, so bind values never reach the page or the headers.
+     */
     public function record(string $sql, float $timeMs, string $source = 'db'): void
     {
-        $this->add($source, 1, $timeMs);
+        $this->tally($source, 1, $timeMs);
 
-        $key = $source . '|' . self::fingerprint($sql);
+        $statement = self::fingerprint($sql);
+        $key = $source . '|' . $statement;
 
-        if (!isset($this->queries[$key])) {
-            if (count($this->queries) >= $this->maxQueries) {
+        if (!isset($this->statements[$key])) {
+            if (count($this->statements) >= $this->maxStatements) {
                 $this->truncated = true;
 
                 return;
             }
 
-            $this->queries[$key] = [
-                'sql' => self::shorten($sql),
+            $this->statements[$key] = [
+                'sql' => self::shorten($statement),
                 'source' => $source,
                 'count' => 0,
                 'timeMs' => 0.0,
@@ -58,30 +65,25 @@ final class Collector
             ];
         }
 
-        $this->queries[$key]['count']++;
-        $this->queries[$key]['timeMs'] += $timeMs;
-        $this->queries[$key]['maxMs'] = max($this->queries[$key]['maxMs'], $timeMs);
+        $this->statements[$key]['count']++;
+        $this->statements[$key]['timeMs'] += $timeMs;
+        $this->statements[$key]['maxMs'] = max($this->statements[$key]['maxMs'], $timeMs);
     }
 
     /** Totals for a source that cannot report individual statements. */
     public function add(string $source, int $count, float $timeMs): void
     {
-        $counter = $this->counters[$source] ?? ['count' => 0, 'timeMs' => 0.0];
-
-        $this->counters[$source] = [
-            'count' => $counter['count'] + $count,
-            'timeMs' => $counter['timeMs'] + $timeMs,
-        ];
+        $this->tally($source, $count, $timeMs);
     }
 
     /**
-     * Aggregate source read at snapshot time.
+     * Same as add(), resolved at snapshot time.
      *
      * @param  callable(): array{count: int|float, timeMs: int|float}  $resolver
      */
-    public function lazy(string $source, callable $resolver): void
+    public function addUsing(string $source, callable $resolver): void
     {
-        $this->lazy[$source] = Closure::fromCallable($resolver);
+        $this->deferred[$source] = Closure::fromCallable($resolver);
     }
 
     public function mark(string $name, float $timeMs): void
@@ -107,9 +109,9 @@ final class Collector
     /** @return array<string, mixed> */
     public function snapshot(): array
     {
-        $sources = $this->counters;
+        $sources = $this->sources;
 
-        foreach ($this->lazy as $source => $resolver) {
+        foreach ($this->deferred as $source => $resolver) {
             $resolved = $resolver();
             $sources[$source] = [
                 'count' => (int) ($resolved['count'] ?? 0),
@@ -132,11 +134,12 @@ final class Collector
         $totalMs = (microtime(true) - $this->startedAt) * 1000;
 
         return [
-            'db' => [
+            'queries' => [
                 'count' => $count,
                 'timeMs' => round($timeMs, 1),
                 'sources' => $sources,
             ],
+            'statements' => $this->topStatements(),
             'time' => [
                 'totalMs' => round($totalMs, 1),
                 'phpMs' => round(max(0.0, $totalMs - $timeMs), 1),
@@ -149,25 +152,34 @@ final class Collector
                 static fn (mixed $value): mixed => $value instanceof Closure ? $value() : $value,
                 $this->meta
             ),
-            'queries' => $this->topQueries(),
             'truncated' => $this->truncated,
         ];
     }
 
     /** @return array<int, array{sql: string, source: string, count: int, timeMs: float, maxMs: float}> */
-    public function topQueries(int $limit = 15): array
+    public function topStatements(int $limit = 15): array
     {
-        $queries = array_values($this->queries);
+        $statements = array_values($this->statements);
 
-        usort($queries, static fn (array $a, array $b): int => [$b['count'], $b['timeMs']] <=> [$a['count'], $a['timeMs']]);
+        usort($statements, static fn (array $a, array $b): int => [$b['count'], $b['timeMs']] <=> [$a['count'], $a['timeMs']]);
 
-        return array_slice(array_map(static fn (array $query): array => [
-            'sql' => $query['sql'],
-            'source' => $query['source'],
-            'count' => $query['count'],
-            'timeMs' => round($query['timeMs'], 1),
-            'maxMs' => round($query['maxMs'], 1),
-        ], $queries), 0, $limit);
+        return array_slice(array_map(static fn (array $statement): array => [
+            'sql' => $statement['sql'],
+            'source' => $statement['source'],
+            'count' => $statement['count'],
+            'timeMs' => round($statement['timeMs'], 1),
+            'maxMs' => round($statement['maxMs'], 1),
+        ], $statements), 0, $limit);
+    }
+
+    private function tally(string $source, int $count, float $timeMs): void
+    {
+        $counter = $this->sources[$source] ?? ['count' => 0, 'timeMs' => 0.0];
+
+        $this->sources[$source] = [
+            'count' => $counter['count'] + $count,
+            'timeMs' => $counter['timeMs'] + $timeMs,
+        ];
     }
 
     private static function fingerprint(string $sql): string
@@ -181,8 +193,6 @@ final class Collector
 
     private static function shorten(string $sql, int $limit = 300): string
     {
-        $sql = trim(preg_replace('/\s+/', ' ', $sql) ?? $sql);
-
         return mb_strlen($sql) > $limit ? mb_substr($sql, 0, $limit) . '…' : $sql;
     }
 }

@@ -7,7 +7,7 @@ namespace Hkyss\Sonar;
 /** Snapshot as response headers, so the overlay can report XHR requests too. */
 final class Headers
 {
-    private const SUFFIXES = ['Queries', 'Db-Time', 'Time', 'Memory'];
+    private const SUFFIXES = ['Queries', 'Query-Time', 'Time', 'Memory'];
 
     /**
      * @param  array<string, mixed>  $snapshot
@@ -20,8 +20,8 @@ final class Headers
         }
 
         return [
-            $prefix . 'Queries' => (string) ($snapshot['db']['count'] ?? 0),
-            $prefix . 'Db-Time' => (string) ($snapshot['db']['timeMs'] ?? 0),
+            $prefix . 'Queries' => (string) ($snapshot['queries']['count'] ?? 0),
+            $prefix . 'Query-Time' => (string) ($snapshot['queries']['timeMs'] ?? 0),
             $prefix . 'Time' => (string) ($snapshot['time']['totalMs'] ?? 0),
             $prefix . 'Memory' => (string) ($snapshot['memory']['peakMb'] ?? 0),
         ];
