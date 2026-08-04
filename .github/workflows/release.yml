@@ -1,0 +1,34 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Fails when the tag has no changelog entry, which is the point: a tag
+      # nobody wrote notes for is not a release anyone can read.
+      - name: Take the notes from the changelog
+        run: |
+          heading="## [${GITHUB_REF_NAME#v}]"
+          awk -v h="$heading" '
+            index($0, h) == 1 { found = 1; next }
+            found && /^## / { exit }
+            found { print }
+          ' CHANGELOG.md > notes.md
+
+          if [ ! -s notes.md ]; then
+            echo "CHANGELOG.md has no '$heading' section" >&2
+            exit 1
+          fi
+
+      - run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md
+        env:
+          GH_TOKEN: ${{ github.token }}

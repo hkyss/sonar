@@ -73,3 +73,18 @@ with `!`.
 
 One concern per pull request. If a change needs a refactor first, that is two
 pull requests.
+
+## Releasing
+
+Add the section to `CHANGELOG.md` first, then push the tag:
+
+```bash
+git tag -a v0.3.0 -m v0.3.0 && git push origin v0.3.0
+```
+
+A workflow turns the tag into a GitHub release, taking the notes from the
+matching `## [0.3.0]` section. It fails when that section is missing, so the
+changelog cannot fall behind the tags.
+
+Packagist reads tags rather than releases, so a package version appears as soon
+as the tag is pushed.
