@@ -42,14 +42,18 @@ With `'enabled' => 'gated'` and no `gate`, any authenticated user sees the overl
 
 ## Evolution CMS 3
 
-Register the EVO provider instead of the Laravel one — it adds the legacy `evo()->db` counters and injects through `OnWebPagePrerender`, which also covers pages served from the EVO page cache. The gate is a manager login.
+Register the EVO provider instead of the Laravel one — it injects through `OnWebPagePrerender`, which also covers pages served from the EVO page cache, and gates on a manager login.
 
 ```php
 // core/custom/config/app/providers/SonarServiceProvider.php
 <?php return \Sonar\Integration\Evolution\SonarEvolutionServiceProvider::class;
 ```
 
-Set `SONAR` in the web server environment (EVO does not parse `.env`): `env[SONAR] = gated` in the php-fpm pool, or `SetEnv SONAR gated` for mod_php.
+Set `SONAR=gated` in `core/custom/.env` or in the web server environment (`env[SONAR]` in the php-fpm pool, `SetEnv SONAR gated` for mod_php).
+
+Queries are split into two sources. EVO 3.1 runs its legacy `evo()->db` API on an Illuminate connection but calls `logQuery()` with **seconds** where Illuminate reports **milliseconds**; the integration tells the two apart by `Connection::beforeExecuting`, which only fires for Illuminate-driven queries, and normalises the legacy timings. `evo()->executedQueries` is not used — EVO never increments it.
+
+Registration is idempotent: a package chain where several providers extend one another and each registers Sonar wires the listeners once.
 
 ## PSR-15
 

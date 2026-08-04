@@ -16,20 +16,25 @@ class SonarServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../../../config/sonar.php', 'sonar');
 
-        if (Sonar::boot($this->sonarConfig()) === null) {
+        if (Sonar::collecting() || Sonar::boot($this->sonarConfig()) === null) {
             return;
         }
 
         $events = $this->app->make('events');
 
-        $events->listen(
-            QueryExecuted::class,
-            static fn (QueryExecuted $event) => Sonar::record($event->sql, (float) $event->time, 'db')
-        );
+        $this->listenToQueries($events);
 
         $events->listen(
             RouteMatched::class,
             static fn (RouteMatched $event) => $event->route->middleware(SonarMiddleware::class)
+        );
+    }
+
+    protected function listenToQueries(mixed $events): void
+    {
+        $events->listen(
+            QueryExecuted::class,
+            static fn (QueryExecuted $event) => Sonar::record($event->sql, (float) $event->time, 'db')
         );
     }
 

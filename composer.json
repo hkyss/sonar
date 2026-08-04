@@ -23,6 +23,7 @@
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.64",
+    "illuminate/config": "^10.0",
     "illuminate/database": "^10.0",
     "illuminate/events": "^10.0",
     "illuminate/http": "^10.0",

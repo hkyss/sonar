@@ -4,34 +4,57 @@ declare(strict_types=1);
 
 namespace Sonar\Integration\Evolution;
 
+use Illuminate\Database\Events\QueryExecuted;
 use Sonar\Config;
 use Sonar\Integration\Laravel\SonarServiceProvider;
 use Sonar\Sonar;
 
 /**
- * Evolution CMS 3 provider: adds the legacy query counters and injects the
- * overlay through OnWebPagePrerender, which also covers pages served from the
- * EVO page cache.
+ * Evolution CMS 3 provider: injects through OnWebPagePrerender, which also
+ * covers pages served from the EVO page cache, and gates on a manager login.
  */
 class SonarEvolutionServiceProvider extends SonarServiceProvider
 {
     public function register(): void
     {
+        if (Sonar::collecting()) {
+            return;
+        }
+
         parent::register();
 
         if (!Sonar::collecting()) {
             return;
         }
 
-        Sonar::lazy('evo', static fn (): array => [
-            'count' => (int) (evo()->executedQueries ?? 0),
-            'timeMs' => (float) (evo()->queryTime ?? 0) * 1000,
-        ]);
-
+        Sonar::meta('document', static fn (): int => (int) evo()->documentIdentifier);
         Sonar::meta('source', static fn (): string => (int) (evo()->documentGenerated ?? 1) === 0 ? 'cache' : 'database');
 
         $this->app->make('events')->listen('evolution.OnWebPagePrerender', static function (): void {
             evo()->documentOutput = Sonar::inject((string) evo()->documentOutput);
+        });
+    }
+
+    /**
+     * EVO's legacy driver reports its timings in seconds, Illuminate in
+     * milliseconds; queries are labelled and normalised accordingly.
+     */
+    protected function listenToQueries(mixed $events): void
+    {
+        $origin = new QueryOrigin();
+
+        if ($this->app->bound('db')) {
+            $this->app->make('db')->connection()->beforeExecuting(static fn () => $origin->mark());
+        }
+
+        $events->listen(QueryExecuted::class, static function (QueryExecuted $event) use ($origin): void {
+            $illuminate = $origin->take();
+
+            Sonar::record(
+                $event->sql,
+                $illuminate ? (float) $event->time : (float) $event->time * 1000,
+                $illuminate ? 'eloquent' : 'evo'
+            );
         });
     }
 

@@ -3,10 +3,6 @@
 declare(strict_types=1);
 
 $sonarEnv = static function (string $key, mixed $default = null): mixed {
-    if (function_exists('env')) {
-        return env($key, $default);
-    }
-
     $value = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key);
 
     return is_string($value) && $value !== '' ? $value : $default;
