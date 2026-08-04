@@ -30,6 +30,7 @@
     "illuminate/routing": "^10.0",
     "illuminate/support": "^10.0",
     "nyholm/psr7": "^1.8",
+    "phpstan/phpstan": "^2.1",
     "phpunit/phpunit": "^10.5",
     "psr/http-factory": "^1.0",
     "psr/http-server-middleware": "^1.0"
@@ -62,8 +63,10 @@
     "cs:fix": "php-cs-fixer fix",
     "check": [
       "@cs",
+      "@stan",
       "@test"
-    ]
+    ],
+    "stan": "phpstan analyse"
   },
   "config": {
     "sort-packages": true

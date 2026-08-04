@@ -2,7 +2,7 @@ name: ci
 
 on:
   push:
-    branches: [main]
+    branches: [dev]
   pull_request:
 
 permissions:
@@ -28,5 +28,33 @@ jobs:
 
       - run: vendor/bin/phpunit
 
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: pdo_sqlite, mbstring
+          coverage: none
+
+      - run: composer install --no-interaction --prefer-dist
+
+      - run: vendor/bin/phpstan analyse --no-progress
+
       - run: vendor/bin/php-cs-fixer fix --dry-run --diff
-        if: matrix.php == '8.1'
+
+  overlay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm test

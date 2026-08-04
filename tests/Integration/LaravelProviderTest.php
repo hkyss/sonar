@@ -6,6 +6,7 @@ namespace Hkyss\Sonar\Tests\Integration;
 
 use Hkyss\Sonar\Integration\Laravel\SonarServiceProvider;
 use Hkyss\Sonar\Sonar;
+use Hkyss\Sonar\Tests\ReadsSnapshots;
 use Illuminate\Config\Repository as ConfigRepository;
 use Illuminate\Container\Container;
 use Illuminate\Database\Connection;
@@ -16,6 +17,8 @@ use PHPUnit\Framework\TestCase;
 
 final class LaravelProviderTest extends TestCase
 {
+    use ReadsSnapshots;
+
     private Container $app;
 
     private Dispatcher $events;
@@ -92,7 +95,7 @@ final class LaravelProviderTest extends TestCase
 
         $this->events->dispatch(new QueryExecuted('select 1', [], 3.5, new Connection(new PDO('sqlite::memory:'))));
 
-        self::assertSame(1, Sonar::snapshot()['queries']['count']);
-        self::assertSame(3.5, Sonar::snapshot()['queries']['timeMs']);
+        self::assertSame(1, self::snapshot()['queries']['count']);
+        self::assertSame(3.5, self::snapshot()['queries']['timeMs']);
     }
 }

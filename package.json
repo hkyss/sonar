@@ -1,0 +1,14 @@
+{
+  "name": "@hkyss/sonar",
+  "private": true,
+  "description": "Test harness for the Sonar overlay script. The package itself ships no JavaScript build.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1",
+    "vitest": "^2.1.8"
+  }
+}

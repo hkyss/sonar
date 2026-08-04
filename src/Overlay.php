@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Hkyss\Sonar;
 
-/** Inline styles, data and script inserted before the closing body tag. */
+/**
+ * Inline styles, data and script inserted before the closing body tag.
+ *
+ * @phpstan-import-type SonarSnapshot from Collector
+ */
 final class Overlay
 {
     private const ASSETS = __DIR__ . '/Assets';
@@ -13,7 +17,7 @@ final class Overlay
     {
     }
 
-    /** @param array<string, mixed> $snapshot */
+    /** @param SonarSnapshot|array{} $snapshot */
     public function injectInto(string $html, array $snapshot): string
     {
         $position = strripos($html, '</body>');
@@ -25,7 +29,7 @@ final class Overlay
         return substr($html, 0, $position) . $this->html($snapshot) . substr($html, $position);
     }
 
-    /** @param array<string, mixed> $snapshot */
+    /** @param SonarSnapshot|array{} $snapshot */
     public function html(array $snapshot): string
     {
         $payload = json_encode(

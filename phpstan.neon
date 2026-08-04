@@ -1,0 +1,13 @@
+parameters:
+    level: 8
+    paths:
+        - src
+        - tests
+    scanFiles:
+        - stubs/optional.php
+    ignoreErrors:
+        # A service provider only ever needs a container. The tests build one
+        # directly rather than booting a whole Laravel application.
+        -
+            identifier: argument.type
+            path: tests/Integration/LaravelProviderTest.php

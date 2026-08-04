@@ -6,6 +6,8 @@ namespace Hkyss\Sonar\Integration\Laravel;
 
 use Hkyss\Sonar\Config;
 use Hkyss\Sonar\Sonar;
+use Illuminate\Config\Repository;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Support\ServiceProvider;
@@ -21,6 +23,7 @@ class SonarServiceProvider extends ServiceProvider
             return;
         }
 
+        /** @var Dispatcher $events */
         $events = $this->app->make('events');
 
         $this->listenToQueries($events);
@@ -36,6 +39,8 @@ class SonarServiceProvider extends ServiceProvider
     /**
      * Octane keeps the worker alive between requests, so the collector has to
      * be reopened per request. Under PHP-FPM this event never fires.
+     *
+     * @param  Dispatcher  $events
      */
     protected function listenToRequestBoundary(mixed $events): void
     {
@@ -44,6 +49,7 @@ class SonarServiceProvider extends ServiceProvider
         }
     }
 
+    /** @param  Dispatcher  $events */
     protected function listenToQueries(mixed $events): void
     {
         $events->listen(
@@ -61,12 +67,13 @@ class SonarServiceProvider extends ServiceProvider
 
     protected function sonarConfig(): Config
     {
+        /** @var Repository $config */
         $config = $this->app->make('config');
 
         return Config::fromValue(
             $config->get('sonar.enabled', false),
             $this->gate(),
-            (int) $config->get('sonar.max_queries', 200),
+            self::maxQueries($config),
             $this->inProduction()
         );
     }
@@ -81,7 +88,10 @@ class SonarServiceProvider extends ServiceProvider
      */
     protected function gate(): ?callable
     {
-        $ability = $this->app->make('config')->get('sonar.gate');
+        /** @var Repository $config */
+        $config = $this->app->make('config');
+
+        $ability = $config->get('sonar.gate');
 
         if (!is_callable($ability)) {
             return null;
@@ -92,9 +102,21 @@ class SonarServiceProvider extends ServiceProvider
 
     protected function inProduction(): bool
     {
-        return method_exists($this->app, 'environment')
-            ? (bool) $this->app->environment('production')
+        /** @var Repository $config */
+        $config = $this->app->make('config');
+
+        $environment = $config->get('app.env');
+
+        return is_string($environment)
+            ? in_array(strtolower($environment), ['production', 'prod'], true)
             : Config::isProduction();
+    }
+
+    protected static function maxQueries(Repository $config): int
+    {
+        $max = $config->get('sonar.max_queries', 200);
+
+        return is_numeric($max) ? (int) $max : 200;
     }
 
     protected function configPath(): string

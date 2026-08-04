@@ -7,6 +7,9 @@ namespace Hkyss\Sonar\Integration\Evolution;
 use Hkyss\Sonar\Config;
 use Hkyss\Sonar\Integration\Laravel\SonarServiceProvider;
 use Hkyss\Sonar\Sonar;
+use Illuminate\Config\Repository;
+use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Events\QueryExecuted;
 
 /**
@@ -23,14 +26,17 @@ class SonarEvolutionServiceProvider extends SonarServiceProvider
 
         parent::register();
 
-        if (!Sonar::collecting()) {
+        if (Sonar::collector() === null) {
             return;
         }
 
         Sonar::meta('document', static fn (): int => (int) evo()->documentIdentifier);
         Sonar::meta('source', static fn (): string => (int) (evo()->documentGenerated ?? 1) === 0 ? 'cache' : 'database');
 
-        $this->app->make('events')->listen('evolution.OnWebPagePrerender', static function (): void {
+        /** @var Dispatcher $events */
+        $events = $this->app->make('events');
+
+        $events->listen('evolution.OnWebPagePrerender', static function (): void {
             evo()->documentOutput = Sonar::inject((string) evo()->documentOutput);
         });
     }
@@ -44,7 +50,9 @@ class SonarEvolutionServiceProvider extends SonarServiceProvider
         $origin = new QueryOrigin();
 
         if ($this->app->bound('db')) {
-            $this->app->make('db')->connection()->beforeExecuting(static fn () => $origin->mark());
+            /** @var DatabaseManager $db */
+            $db = $this->app->make('db');
+            $db->connection()->beforeExecuting(static fn () => $origin->mark());
         }
 
         $events->listen(QueryExecuted::class, static function (QueryExecuted $event) use ($origin): void {
@@ -60,12 +68,13 @@ class SonarEvolutionServiceProvider extends SonarServiceProvider
 
     protected function sonarConfig(): Config
     {
+        /** @var Repository $config */
         $config = $this->app->make('config');
 
         return Config::fromValue(
             $config->get('sonar.enabled', false),
             static fn (): bool => PHP_SAPI !== 'cli' && evo()->isLoggedIn('mgr'),
-            (int) $config->get('sonar.max_queries', 200),
+            self::maxQueries($config),
             $this->inProduction()
         );
     }

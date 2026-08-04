@@ -6,13 +6,27 @@ namespace Hkyss\Sonar;
 
 use Closure;
 
-/** Per-request counters: statements, aggregate sources, named timings and metadata. */
+/**
+ * Per-request counters: statements, aggregate sources, named timings and metadata.
+ *
+ * @phpstan-type SonarStatement array{sql: string, source: string, count: int, timeMs: float, maxMs: float}
+ * @phpstan-type SonarSource array{count: int, timeMs: float}
+ * @phpstan-type SonarSnapshot array{
+ *     queries: array{count: int, timeMs: float, sources: array<string, SonarSource>},
+ *     statements: list<SonarStatement>,
+ *     time: array{totalMs: float, phpMs: float},
+ *     memory: array{peakMb: float},
+ *     marks: array<string, float>,
+ *     meta: array<string, mixed>,
+ *     truncated: bool
+ * }
+ */
 final class Collector
 {
-    /** @var array<string, array{sql: string, source: string, count: int, timeMs: float, maxMs: float}> */
+    /** @var array<string, SonarStatement> */
     private array $statements = [];
 
-    /** @var array<string, array{count: int, timeMs: float}> */
+    /** @var array<string, SonarSource> */
     private array $sources = [];
 
     /** @var array<string, Closure> */
@@ -32,7 +46,9 @@ final class Collector
 
     public function __construct(?float $startedAt = null, int $maxStatements = 200)
     {
-        $this->startedAt = $startedAt ?? (float) ($_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true));
+        $requestTime = $_SERVER['REQUEST_TIME_FLOAT'] ?? null;
+
+        $this->startedAt = $startedAt ?? (is_numeric($requestTime) ? (float) $requestTime : microtime(true));
         $this->maxStatements = max(1, $maxStatements);
     }
 
@@ -79,7 +95,7 @@ final class Collector
     /**
      * Same as add(), resolved at snapshot time.
      *
-     * @param  callable(): array{count: int|float, timeMs: int|float}  $resolver
+     * @param  callable(): array{count?: int|float, timeMs?: int|float}  $resolver
      */
     public function addUsing(string $source, callable $resolver): void
     {
@@ -106,7 +122,7 @@ final class Collector
         $this->meta[$key] = $value;
     }
 
-    /** @return array<string, mixed> */
+    /** @return SonarSnapshot */
     public function snapshot(): array
     {
         $sources = $this->sources;
@@ -156,7 +172,7 @@ final class Collector
         ];
     }
 
-    /** @return array<int, array{sql: string, source: string, count: int, timeMs: float, maxMs: float}> */
+    /** @return list<SonarStatement> */
     public function topStatements(int $limit = 15): array
     {
         $statements = array_values($this->statements);

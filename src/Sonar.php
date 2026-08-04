@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Hkyss\Sonar;
 
-/** Request-scoped entry point; every method is a no-op while the collector is off. */
+/**
+ * Request-scoped entry point; every method is a no-op while the collector is off.
+ *
+ * @phpstan-import-type SonarSnapshot from Collector
+ */
 final class Sonar
 {
     private static ?Collector $collector = null;
@@ -93,7 +97,7 @@ final class Sonar
         self::$collector?->meta($key, $value);
     }
 
-    /** @return array<string, mixed> */
+    /** @return SonarSnapshot|array{} */
     public static function snapshot(): array
     {
         return self::$collector?->snapshot() ?? [];

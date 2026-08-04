@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Hkyss\Sonar;
 
-/** Snapshot as response headers, so the overlay can report XHR requests too. */
+/**
+ * Snapshot as response headers, so the overlay can report XHR requests too.
+ *
+ * @phpstan-import-type SonarSnapshot from Collector
+ */
 final class Headers
 {
     private const SUFFIXES = ['Queries', 'Query-Time', 'Time', 'Memory'];
 
     /**
-     * @param  array<string, mixed>  $snapshot
+     * @param  SonarSnapshot|array{}  $snapshot
      * @return array<string, string>
      */
     public static function fromSnapshot(array $snapshot, string $prefix = 'X-Sonar-'): array
@@ -20,10 +24,10 @@ final class Headers
         }
 
         return [
-            $prefix . 'Queries' => (string) ($snapshot['queries']['count'] ?? 0),
-            $prefix . 'Query-Time' => (string) ($snapshot['queries']['timeMs'] ?? 0),
-            $prefix . 'Time' => (string) ($snapshot['time']['totalMs'] ?? 0),
-            $prefix . 'Memory' => (string) ($snapshot['memory']['peakMb'] ?? 0),
+            $prefix . 'Queries' => (string) $snapshot['queries']['count'],
+            $prefix . 'Query-Time' => (string) $snapshot['queries']['timeMs'],
+            $prefix . 'Time' => (string) $snapshot['time']['totalMs'],
+            $prefix . 'Memory' => (string) $snapshot['memory']['peakMb'],
         ];
     }
 

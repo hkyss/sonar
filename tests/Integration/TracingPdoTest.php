@@ -7,10 +7,13 @@ namespace Hkyss\Sonar\Tests\Integration;
 use Hkyss\Sonar\Config;
 use Hkyss\Sonar\Integration\Pdo\TracingPdo;
 use Hkyss\Sonar\Sonar;
+use Hkyss\Sonar\Tests\ReadsSnapshots;
 use PHPUnit\Framework\TestCase;
 
 final class TracingPdoTest extends TestCase
 {
+    use ReadsSnapshots;
+
     private TracingPdo $pdo;
 
     protected function setUp(): void
@@ -35,7 +38,7 @@ final class TracingPdoTest extends TestCase
     {
         $this->pdo->query('select * from users');
 
-        $snapshot = Sonar::snapshot();
+        $snapshot = self::snapshot();
 
         self::assertSame(2, $snapshot['queries']['count']);
         self::assertSame(2, $snapshot['queries']['sources']['pdo']['count']);
@@ -48,7 +51,7 @@ final class TracingPdoTest extends TestCase
         $statement->execute(['second']);
 
         $statements = array_values(array_filter(
-            Sonar::snapshot()['statements'],
+            self::snapshot()['statements'],
             static fn (array $statement): bool => str_starts_with($statement['sql'], 'insert')
         ));
 

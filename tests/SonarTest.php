@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 
 final class SonarTest extends TestCase
 {
+    use ReadsSnapshots;
+
     protected function setUp(): void
     {
         Sonar::reset();
@@ -49,7 +51,7 @@ final class SonarTest extends TestCase
         Sonar::record('select 1', 2.0);
 
         self::assertTrue(Sonar::visible());
-        self::assertSame(1, Sonar::snapshot()['queries']['count']);
+        self::assertSame(1, self::snapshot()['queries']['count']);
         self::assertStringContainsString('id="sonar-data"', Sonar::inject('<html><body></body></html>'));
     }
 
@@ -77,7 +79,7 @@ final class SonarTest extends TestCase
         Sonar::record('select 1', 2.0);
         Sonar::boot(Config::fromValue(true));
 
-        self::assertSame(1, Sonar::snapshot()['queries']['count']);
+        self::assertSame(1, self::snapshot()['queries']['count']);
     }
 
     public function testStartOpensAFreshRequest(): void
@@ -88,17 +90,17 @@ final class SonarTest extends TestCase
         Sonar::start();
 
         self::assertTrue(Sonar::collecting());
-        self::assertSame(0, Sonar::snapshot()['queries']['count']);
+        self::assertSame(0, self::snapshot()['queries']['count']);
     }
 
     public function testStartRestartsTheClock(): void
     {
         Sonar::boot(Config::fromValue(true));
-        $before = Sonar::snapshot()['time']['totalMs'];
+        $before = self::snapshot()['time']['totalMs'];
 
         Sonar::start();
 
-        self::assertLessThanOrEqual($before, Sonar::snapshot()['time']['totalMs']);
+        self::assertLessThanOrEqual($before, self::snapshot()['time']['totalMs']);
     }
 
     public function testStartStaysSilentWhileOff(): void
