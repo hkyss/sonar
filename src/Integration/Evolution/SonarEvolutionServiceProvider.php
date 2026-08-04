@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Sonar\Integration\Evolution;
+namespace Hkyss\Sonar\Integration\Evolution;
 
 use Illuminate\Database\Events\QueryExecuted;
-use Sonar\Config;
-use Sonar\Integration\Laravel\SonarServiceProvider;
-use Sonar\Sonar;
+use Hkyss\Sonar\Config;
+use Hkyss\Sonar\Integration\Laravel\SonarServiceProvider;
+use Hkyss\Sonar\Sonar;
 
 /**
  * Evolution CMS 3 provider: injects through OnWebPagePrerender, which also

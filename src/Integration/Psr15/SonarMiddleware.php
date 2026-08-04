@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Sonar\Integration\Psr15;
+namespace Hkyss\Sonar\Integration\Psr15;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sonar\Headers;
-use Sonar\Overlay;
-use Sonar\Sonar;
+use Hkyss\Sonar\Headers;
+use Hkyss\Sonar\Overlay;
+use Hkyss\Sonar\Sonar;
 
 final class SonarMiddleware implements MiddlewareInterface
 {

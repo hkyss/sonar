@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Sonar\Integration\Pdo;
+namespace Hkyss\Sonar\Integration\Pdo;
 
 use PDO;
 use PDOStatement;
-use Sonar\Sonar;
+use Hkyss\Sonar\Sonar;
 
 /** Drop-in PDO that reports every statement it runs. */
 final class TracingPdo extends PDO

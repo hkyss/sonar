@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Sonar\Tests\Integration;
+namespace Hkyss\Sonar\Tests\Integration;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use PHPUnit\Framework\TestCase;
-use Sonar\Config;
-use Sonar\Integration\Laravel\SonarMiddleware;
-use Sonar\Sonar;
+use Hkyss\Sonar\Config;
+use Hkyss\Sonar\Integration\Laravel\SonarMiddleware;
+use Hkyss\Sonar\Sonar;
 
 final class LaravelMiddlewareTest extends TestCase
 {

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Sonar\Tests;
+namespace Hkyss\Sonar\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Sonar\Config;
+use Hkyss\Sonar\Config;
 
 final class ConfigTest extends TestCase
 {

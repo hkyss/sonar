@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sonar;
+namespace Hkyss\Sonar;
 
 /** Request-scoped entry point; every method is a no-op while the collector is off. */
 final class Sonar

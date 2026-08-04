@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Sonar\Integration\Laravel;
+namespace Hkyss\Sonar\Integration\Laravel;
 
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Support\ServiceProvider;
-use Sonar\Config;
-use Sonar\Sonar;
+use Hkyss\Sonar\Config;
+use Hkyss\Sonar\Sonar;
 
 class SonarServiceProvider extends ServiceProvider
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sonar\Tests\Integration;
+namespace Hkyss\Sonar\Tests\Integration;
 
 use Illuminate\Config\Repository as ConfigRepository;
 use Illuminate\Container\Container;
@@ -11,8 +11,8 @@ use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Events\Dispatcher;
 use PDO;
 use PHPUnit\Framework\TestCase;
-use Sonar\Integration\Laravel\SonarServiceProvider;
-use Sonar\Sonar;
+use Hkyss\Sonar\Integration\Laravel\SonarServiceProvider;
+use Hkyss\Sonar\Sonar;
 
 final class LaravelProviderTest extends TestCase
 {

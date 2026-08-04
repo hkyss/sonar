@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sonar;
+namespace Hkyss\Sonar;
 
 /** Inline styles, data and script inserted before the closing body tag. */
 final class Overlay

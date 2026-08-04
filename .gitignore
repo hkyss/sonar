@@ -4,3 +4,4 @@
 /.php-cs-fixer.cache
 .DS_Store
 /.phpunit.result.cache
+/.claude/

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Sonar\Tests;
+namespace Hkyss\Sonar\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Sonar\Collector;
+use Hkyss\Sonar\Collector;
 
 final class CollectorTest extends TestCase
 {
