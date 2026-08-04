@@ -220,14 +220,49 @@
     );
   }
 
+  /**
+   * The most recent request this application answered, or null if there has
+   * not been one.
+   *
+   * Only requests that came back with the server's own headers count. A call
+   * to a third party reports no query count, and letting one of those be the
+   * pill's reading would blank a number that was there a moment ago.
+   */
+  function lastAnswered() {
+    for (var i = state.requests.length - 1; i >= 0; i--) {
+      if (state.requests[i].queries !== null) {
+        return state.requests[i];
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * What the pill reads: the last request the application answered once there
+   * has been one, and the document itself until then.
+   *
+   * It used to read the document plus the sum of every request since, which is
+   * right for a page that loads once and then calls an API in the background —
+   * the totals are what you want there. It is wrong for a page that navigates
+   * by fetch, where each request replaces what is on screen: the number climbs
+   * with every step and never comes down, and a reading that only ever goes up
+   * reads as a leak rather than as a cost per screen.
+   *
+   * The totals have not gone anywhere. They head the Requests section in the
+   * panel, which is where a running total belongs — a glance at the corner of
+   * the screen wants to know what the last thing cost.
+   */
   function renderPill() {
-    var api = totals();
-    var queries = ((server.db || {}).count || 0) + api.queries;
-    var wall = state.client.load || state.client.dom || (server.time || {}).totalMs;
+    var recent = lastAnswered();
+    var queries = recent ? recent.queries : (server.db || {}).count || 0;
+    var wall = recent ? recent.ms : state.client.load || state.client.dom || (server.time || {}).totalMs;
 
     return (
       '<div class="sonar-pill">' +
-      '<button type="button" class="sonar-toggle" title="Sonar">' +
+      '<button type="button" class="sonar-toggle" title="' +
+      (recent ? 'Sonar — last request' : 'Sonar — this page') +
+      '">' +
       '⚡ <b class="' +
       grade(wall, 1500, 3000) +
       '">' +
