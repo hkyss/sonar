@@ -1,6 +1,7 @@
 # Sonar
 
 [![ci](https://github.com/hkyss/sonar/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/hkyss/sonar/actions/workflows/ci.yml)
+[![packagist](https://img.shields.io/packagist/v/hkyss/sonar)](https://packagist.org/packages/hkyss/sonar)
 [![php](https://img.shields.io/badge/php-8.1%20%E2%80%93%208.4-777bb4)](composer.json)
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
@@ -16,16 +17,6 @@ every XHR and fetch the page makes with its own server-side query count.
 - Statements are stored as fingerprints, so bind values never reach the page.
 
 ## Install
-
-Not on Packagist yet, so point Composer at the repository:
-
-```json
-{
-  "repositories": [
-    { "type": "vcs", "url": "https://github.com/hkyss/sonar" }
-  ]
-}
-```
 
 ```bash
 composer require --dev hkyss/sonar:^0.2
