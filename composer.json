@@ -15,7 +15,7 @@
   "authors": [
     {
       "name": "hkyss",
-      "email": "hkyss.services@protonmail.com"
+      "email": "38939279+hkyss@users.noreply.github.com"
     }
   ],
   "require": {
@@ -72,5 +72,10 @@
     "sort-packages": true
   },
   "minimum-stability": "stable",
-  "prefer-stable": true
+  "prefer-stable": true,
+  "support": {
+    "issues": "https://github.com/hkyss/sonar/issues",
+    "source": "https://github.com/hkyss/sonar",
+    "docs": "https://github.com/hkyss/sonar/blob/dev/docs/integrations.md"
+  }
 }
