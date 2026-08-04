@@ -26,10 +26,21 @@ final class Config
         $this->gate = $gate === null ? null : Closure::fromCallable($gate);
     }
 
-    /** Accepts the loose values an env var or a config file may carry. */
-    public static function fromValue(mixed $value, ?callable $gate = null, int $maxQueries = 200): self
+    /**
+     * Accepts the loose values an env var or a config file may carry.
+     *
+     * Both fallbacks are deliberate. `gated` without a gate would show the
+     * overlay to everyone, and `on` in production would show it to anonymous
+     * visitors; either way the safe reading of an ambiguous setting is off.
+     * To run in production, use `gated` with a gate.
+     */
+    public static function fromValue(mixed $value, ?callable $gate = null, int $maxQueries = 200, bool $production = false): self
     {
         $mode = self::resolveMode($value);
+
+        if ($mode === self::MODE_ON && $production) {
+            $mode = self::MODE_OFF;
+        }
 
         if ($mode === self::MODE_GATED && $gate === null) {
             $mode = self::MODE_OFF;
@@ -43,8 +54,15 @@ final class Config
         return self::fromValue(
             self::env($prefix),
             $gate,
-            (int) (self::env($prefix . '_MAX_QUERIES') ?? 200)
+            (int) (self::env($prefix . '_MAX_QUERIES') ?? 200),
+            self::isProduction()
         );
+    }
+
+    /** Reads APP_ENV where it exists; absent, the environment is unknown and not assumed to be production. */
+    public static function isProduction(): bool
+    {
+        return in_array(strtolower((string) self::env('APP_ENV')), ['production', 'prod'], true);
     }
 
     public static function off(): self

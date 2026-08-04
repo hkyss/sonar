@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Hkyss\Sonar\Integration\Evolution;
 
-use Illuminate\Database\Events\QueryExecuted;
 use Hkyss\Sonar\Config;
 use Hkyss\Sonar\Integration\Laravel\SonarServiceProvider;
 use Hkyss\Sonar\Sonar;
+use Illuminate\Database\Events\QueryExecuted;
 
 /**
  * Evolution CMS 3 provider: injects through OnWebPagePrerender, which also
@@ -65,7 +65,8 @@ class SonarEvolutionServiceProvider extends SonarServiceProvider
         return Config::fromValue(
             $config->get('sonar.enabled', false),
             static fn (): bool => PHP_SAPI !== 'cli' && evo()->isLoggedIn('mgr'),
-            (int) $config->get('sonar.max_queries', 200)
+            (int) $config->get('sonar.max_queries', 200),
+            $this->inProduction()
         );
     }
 }

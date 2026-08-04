@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Hkyss\Sonar\Tests\Integration;
 
-use PHPUnit\Framework\TestCase;
 use Hkyss\Sonar\Integration\Evolution\QueryOrigin;
+use PHPUnit\Framework\TestCase;
 
 final class QueryOriginTest extends TestCase
 {

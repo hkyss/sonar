@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Hkyss\Sonar\Tests\Integration;
 
+use Hkyss\Sonar\Integration\Laravel\SonarServiceProvider;
+use Hkyss\Sonar\Sonar;
 use Illuminate\Config\Repository as ConfigRepository;
 use Illuminate\Container\Container;
 use Illuminate\Database\Connection;
@@ -11,8 +13,6 @@ use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Events\Dispatcher;
 use PDO;
 use PHPUnit\Framework\TestCase;
-use Hkyss\Sonar\Integration\Laravel\SonarServiceProvider;
-use Hkyss\Sonar\Sonar;
 
 final class LaravelProviderTest extends TestCase
 {
@@ -54,13 +54,45 @@ final class LaravelProviderTest extends TestCase
         self::assertSame([], $this->events->getListeners(QueryExecuted::class));
     }
 
+    public function testGatedWithoutAGateStaysOff(): void
+    {
+        $this->app->instance('config', new ConfigRepository(['sonar' => ['enabled' => 'gated']]));
+
+        (new SonarServiceProvider($this->app))->register();
+
+        self::assertFalse(Sonar::collecting());
+    }
+
+    public function testGatedUsesTheConfiguredGate(): void
+    {
+        $this->app->instance('config', new ConfigRepository([
+            'sonar' => ['enabled' => 'gated', 'gate' => static fn (): bool => true],
+        ]));
+
+        (new SonarServiceProvider($this->app))->register();
+
+        self::assertTrue(Sonar::collecting());
+        self::assertTrue(Sonar::visible());
+    }
+
+    public function testProductionIgnoresTheOnMode(): void
+    {
+        $_ENV['APP_ENV'] = 'production';
+
+        (new SonarServiceProvider($this->app))->register();
+
+        unset($_ENV['APP_ENV']);
+
+        self::assertFalse(Sonar::collecting());
+    }
+
     public function testRecordsADispatchedQuery(): void
     {
         (new SonarServiceProvider($this->app))->register();
 
         $this->events->dispatch(new QueryExecuted('select 1', [], 3.5, new Connection(new PDO('sqlite::memory:'))));
 
-        self::assertSame(1, Sonar::snapshot()['db']['count']);
-        self::assertSame(3.5, Sonar::snapshot()['db']['timeMs']);
+        self::assertSame(1, Sonar::snapshot()['queries']['count']);
+        self::assertSame(3.5, Sonar::snapshot()['queries']['timeMs']);
     }
 }

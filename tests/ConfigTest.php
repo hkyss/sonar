@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Hkyss\Sonar\Tests;
 
-use PHPUnit\Framework\TestCase;
 use Hkyss\Sonar\Config;
+use PHPUnit\Framework\TestCase;
 
 final class ConfigTest extends TestCase
 {
@@ -35,6 +35,40 @@ final class ConfigTest extends TestCase
     public function testGatedWithoutGateIsOff(): void
     {
         self::assertSame(Config::MODE_OFF, Config::fromValue('gated')->mode());
+    }
+
+    public function testProductionIgnoresTheOnMode(): void
+    {
+        self::assertSame(Config::MODE_OFF, Config::fromValue(true, null, 200, true)->mode());
+    }
+
+    public function testProductionLeavesAGatedModeAlone(): void
+    {
+        $config = Config::fromValue('gated', static fn (): bool => true, 200, true);
+
+        self::assertSame(Config::MODE_GATED, $config->mode());
+        self::assertTrue($config->visible());
+    }
+
+    public function testReadsProductionFromTheEnvironment(): void
+    {
+        $_ENV['APP_ENV'] = 'production';
+        $_ENV['SONAR'] = 'true';
+
+        self::assertSame(Config::MODE_OFF, Config::fromEnv()->mode());
+
+        $_ENV['APP_ENV'] = 'local';
+
+        self::assertSame(Config::MODE_ON, Config::fromEnv()->mode());
+
+        unset($_ENV['APP_ENV'], $_ENV['SONAR']);
+    }
+
+    public function testAnUnknownEnvironmentIsNotProduction(): void
+    {
+        unset($_ENV['APP_ENV'], $_SERVER['APP_ENV']);
+
+        self::assertFalse(Config::isProduction());
     }
 
     public function testGateDecidesVisibility(): void

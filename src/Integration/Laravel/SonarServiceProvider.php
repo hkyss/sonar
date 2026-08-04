@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Hkyss\Sonar\Integration\Laravel;
 
+use Hkyss\Sonar\Config;
+use Hkyss\Sonar\Sonar;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Support\ServiceProvider;
-use Hkyss\Sonar\Config;
-use Hkyss\Sonar\Sonar;
+use Laravel\Octane\Events\RequestReceived;
 
 class SonarServiceProvider extends ServiceProvider
 {
@@ -28,6 +29,19 @@ class SonarServiceProvider extends ServiceProvider
             RouteMatched::class,
             static fn (RouteMatched $event) => $event->route->middleware(SonarMiddleware::class)
         );
+
+        $this->listenToRequestBoundary($events);
+    }
+
+    /**
+     * Octane keeps the worker alive between requests, so the collector has to
+     * be reopened per request. Under PHP-FPM this event never fires.
+     */
+    protected function listenToRequestBoundary(mixed $events): void
+    {
+        if (class_exists(RequestReceived::class)) {
+            $events->listen(RequestReceived::class, static fn () => Sonar::start());
+        }
     }
 
     protected function listenToQueries(mixed $events): void
@@ -52,24 +66,35 @@ class SonarServiceProvider extends ServiceProvider
         return Config::fromValue(
             $config->get('sonar.enabled', false),
             $this->gate(),
-            (int) $config->get('sonar.max_queries', 200)
+            (int) $config->get('sonar.max_queries', 200),
+            $this->inProduction()
         );
     }
 
-    /** @return callable(): bool */
-    protected function gate(): callable
+    /**
+     * There is no default gate. Laravel has no universal notion of an
+     * administrator, and falling back to "any authenticated user" would hand
+     * the schema to anyone who can register. Without a callable sonar.gate,
+     * `gated` collapses to off.
+     *
+     * @return (callable(): bool)|null
+     */
+    protected function gate(): ?callable
     {
-        $config = $this->app->make('config');
+        $ability = $this->app->make('config')->get('sonar.gate');
 
-        return function () use ($config): bool {
-            $ability = $config->get('sonar.gate');
+        if (!is_callable($ability)) {
+            return null;
+        }
 
-            if (is_callable($ability)) {
-                return (bool) $ability($this->app);
-            }
+        return fn (): bool => (bool) $ability($this->app);
+    }
 
-            return $this->app->bound('auth') && (bool) $this->app->make('auth')->check();
-        };
+    protected function inProduction(): bool
+    {
+        return method_exists($this->app, 'environment')
+            ? (bool) $this->app->environment('production')
+            : Config::isProduction();
     }
 
     protected function configPath(): string
