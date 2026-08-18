@@ -12,8 +12,7 @@ what an attacker gets out of it. You will get a first reply within a week.
 
 ## Supported versions
 
-The latest `0.x` minor. While the major is `0`, fixes land in a new minor rather
-than a patch to the previous one.
+The latest `1.x`. Fixes land in a patch on that line.
 
 ## What this tool exposes on purpose
 

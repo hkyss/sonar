@@ -19,7 +19,7 @@ every XHR and fetch the page makes with its own server-side query count.
 ## Install
 
 ```bash
-composer require --dev hkyss/sonar:^0.2
+composer require --dev hkyss/sonar:^1.0
 ```
 
 The root namespace is `hkyss\Sonar\`, lowercase vendor. PHP resolves class names

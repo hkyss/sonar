@@ -2,8 +2,29 @@
 
 Notable changes, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
-[semantic versioning](https://semver.org/spec/v2.0.0.html) — while the major is
-`0`, a minor bump may break things.
+[semantic versioning](https://semver.org/spec/v2.0.0.html). From 1.0.0 the
+public surface is stable and a breaking change needs a major version. That
+surface is: the classes under `hkyss\Sonar\` that are not marked internal —
+`Sonar`, `Collector`, `Config`, `Headers`, `Overlay` — the shape of the
+snapshot array, the `X-Sonar-*` header names, the keys in `config/sonar.php`,
+and the four integrations (Laravel, Evolution CMS 3, PSR-15, PDO). The overlay
+markup and its CSS are not: they are output, not API.
+
+## [Unreleased]
+
+## [1.0.0] — 2026-08-18
+
+No behaviour changes since 0.2.0. The version says the surface above is now
+settled, which 0.2.0 could not promise.
+
+### Added
+
+- A release workflow: a pushed `v*` tag becomes a GitHub release, with the notes
+  taken from the matching section of this file.
+
+### Changed
+
+- The README installs from Packagist rather than from a VCS repository entry.
 
 ## [0.2.0] — 2026-08-04
 
