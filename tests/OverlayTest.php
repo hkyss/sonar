@@ -67,6 +67,14 @@ final class OverlayTest extends TestCase
         self::assertStringContainsString('window.__sonar', $html);
     }
 
+    public function testTheInlineAssetsSpellNoClosingTagAHostMayFilterOn(): void
+    {
+        $html = (new Overlay())->html((new Collector())->snapshot());
+
+        self::assertStringNotContainsString('</body>', $html);
+        self::assertStringNotContainsString('</html>', $html);
+    }
+
     public function testRecognisesHtmlContentTypes(): void
     {
         self::assertTrue(Overlay::isHtml('text/html; charset=UTF-8'));

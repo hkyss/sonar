@@ -12,6 +12,18 @@ markup and its CSS are not: they are output, not API.
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-08-26
+
+### Fixed
+
+- The overlay script no longer spells the closing body tag in its opening
+  comment. A host that inserts its own markup by replacing the first `</body>`
+  in a response — nginx's `sub_filter`, for one — matched that comment instead
+  of the document's own tag, landed inside this script, and ended it early at
+  the `</script>` it brought with it. The rest of the overlay spilled into the
+  page as text and nothing was drawn, with the markup all present and the page
+  otherwise intact.
+
 ## [1.0.0] — 2026-08-18
 
 No behaviour changes since 0.2.0. The version says the surface above is now
