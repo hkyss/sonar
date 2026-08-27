@@ -12,6 +12,8 @@ markup and its CSS are not: they are output, not API.
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-08-27
+
 ### Added
 
 - `Sonar::injectPage()`, and `Overlay::injectIntoPage()` under it, for output
