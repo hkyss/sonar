@@ -16,6 +16,9 @@ namespace EvolutionCMS {
 
         public string $documentOutput = '';
 
+        /** @var array<string, mixed> */
+        public array $documentObject = [];
+
         public function isLoggedIn(string $context = ''): bool
         {
             return false;

@@ -111,10 +111,19 @@ final class Sonar
             : [];
     }
 
+    /** One response among many: output with no closing body tag may be a fragment, and is left alone. */
     public static function inject(string $html): string
     {
         return self::visible()
             ? (new Overlay())->injectInto($html, self::snapshot())
+            : $html;
+    }
+
+    /** The whole page: output with no closing body tag is a document that has none, and the overlay goes on the end. */
+    public static function injectPage(string $html): string
+    {
+        return self::visible()
+            ? (new Overlay())->injectIntoPage($html, self::snapshot())
             : $html;
     }
 

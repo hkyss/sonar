@@ -71,6 +71,11 @@ Register the EVO provider instead of the Laravel one. It injects through
 `OnWebPagePrerender`, which also covers pages served from the EVO page cache,
 and gates on a manager login.
 
+That event carries a whole document, so a template spelling no `</body>` — the
+one a fresh installation serves until it is given templates of its own — still
+gets the overlay, appended to the end. Documents that are not HTML are left
+alone by their own content type, which is where a sitemap or a feed says so.
+
 ```php
 // core/custom/config/app/providers/SonarServiceProvider.php
 <?php return \hkyss\Sonar\Integration\Evolution\SonarEvolutionServiceProvider::class;

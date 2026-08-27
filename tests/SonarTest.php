@@ -33,6 +33,7 @@ final class SonarTest extends TestCase
         self::assertSame([], Sonar::snapshot());
         self::assertSame([], Sonar::headers());
         self::assertSame('<body></body>', Sonar::inject('<body></body>'));
+        self::assertSame('<body></body>', Sonar::injectPage('<body></body>'));
     }
 
     public function testBootingOffKeepsItSilent(): void
@@ -55,6 +56,15 @@ final class SonarTest extends TestCase
         self::assertStringContainsString('id="sonar-data"', Sonar::inject('<html><body></body></html>'));
     }
 
+    public function testRendersOntoAPageThatSpellsNoBodyTag(): void
+    {
+        Sonar::boot(Config::fromValue(true));
+        Sonar::record('select 1', 2.0);
+
+        self::assertSame('<h3>page</h3>', Sonar::inject('<h3>page</h3>'));
+        self::assertStringContainsString('id="sonar-data"', Sonar::injectPage('<h3>page</h3>'));
+    }
+
     public function testCollectsButStaysHiddenBehindTheGate(): void
     {
         $allowed = false;
@@ -67,6 +77,7 @@ final class SonarTest extends TestCase
         self::assertTrue(Sonar::collecting());
         self::assertSame([], Sonar::headers());
         self::assertSame('<body></body>', Sonar::inject('<body></body>'));
+        self::assertSame('<body></body>', Sonar::injectPage('<body></body>'));
 
         $allowed = true;
 

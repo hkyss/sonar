@@ -12,6 +12,28 @@ markup and its CSS are not: they are output, not API.
 
 ## [Unreleased]
 
+### Added
+
+- `Sonar::injectPage()`, and `Overlay::injectIntoPage()` under it, for output
+  that is a whole page rather than one response among many. Where `inject()`
+  leaves output with no `</body>` alone, this appends to the end. Only a caller
+  that knows a complete document is what it holds can tell a bare page from a
+  fragment of one, so it says so by calling this instead; `inject()` is
+  unchanged and stays the right call everywhere else.
+
+### Fixed
+
+- The Evolution CMS overlay is drawn on documents whose template spells no
+  `</body>`, which is what a fresh installation serves until it is given
+  templates of its own. `OnWebPagePrerender` fires once per rendered document,
+  so the provider now injects as a page. It was collecting, visible and holding
+  a snapshot the whole time — there was simply nowhere it was willing to put the
+  markup, and it returned the document untouched without saying so.
+- The Evolution CMS provider skips documents that are not HTML, by their own
+  content type, the way the Laravel and PSR-15 integrations skip responses by
+  theirs. Until now a sitemap rendered from a template was spared only because
+  it happened to carry no `</body>`.
+
 ## [1.0.1] — 2026-08-26
 
 ### Fixed
