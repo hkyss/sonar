@@ -6,6 +6,7 @@ namespace hkyss\Sonar\Integration\Evolution;
 
 use hkyss\Sonar\Config;
 use hkyss\Sonar\Integration\Laravel\SonarServiceProvider;
+use hkyss\Sonar\Overlay;
 use hkyss\Sonar\Sonar;
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -14,7 +15,8 @@ use Illuminate\Database\Events\QueryExecuted;
 
 /**
  * Evolution CMS 3 provider: injects through OnWebPagePrerender, which also
- * covers pages served from the EVO page cache, and gates on a manager login.
+ * covers pages served from the EVO page cache, and gates on a manager login and
+ * on the document's own content type.
  */
 class SonarEvolutionServiceProvider extends SonarServiceProvider
 {
@@ -37,8 +39,29 @@ class SonarEvolutionServiceProvider extends SonarServiceProvider
         $events = $this->app->make('events');
 
         $events->listen('evolution.OnWebPagePrerender', static function (): void {
-            evo()->documentOutput = Sonar::inject((string) evo()->documentOutput);
+            if (!Overlay::isHtml(self::documentContentType())) {
+                return;
+            }
+
+            // The event fires once per rendered document, so what it carries is a
+            // whole page — including the ones whose template spells no body tag,
+            // which a fresh installation serves until it is given templates of
+            // its own.
+            evo()->documentOutput = Sonar::injectPage((string) evo()->documentOutput);
         });
+    }
+
+    /**
+     * A document declares its own content type, and the ones that are not HTML —
+     * a sitemap, a feed, anything built from a template and served as XML — reach
+     * the event like every other page. Read the way Evolution reads it when it
+     * sends the header: an empty field means a page.
+     */
+    private static function documentContentType(): string
+    {
+        $type = evo()->documentObject['contentType'] ?? '';
+
+        return is_string($type) && $type !== '' ? $type : 'text/html';
     }
 
     /**

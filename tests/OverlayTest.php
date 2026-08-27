@@ -29,6 +29,34 @@ final class OverlayTest extends TestCase
         self::assertSame($xml, (new Overlay())->injectInto($xml, []));
     }
 
+    public function testLeavesAFragmentOfAPageAlone(): void
+    {
+        $partial = '<li class="row">one</li><li class="row">two</li>';
+
+        self::assertSame($partial, (new Overlay())->injectInto($partial, []));
+    }
+
+    public function testAppendsToAPageThatHasNoClosingBodyTag(): void
+    {
+        $page = '<h3>Install Successful!</h3><p>Welcome to Evolution CMS!</p>';
+
+        $html = (new Overlay())->injectIntoPage($page, (new Collector())->snapshot());
+
+        self::assertStringStartsWith($page, $html);
+        self::assertStringContainsString('id="sonar-data"', $html);
+    }
+
+    public function testAPageWithABodyTagStillTakesTheOverlayBeforeIt(): void
+    {
+        $html = (new Overlay())->injectIntoPage(
+            '<html><body><div id="root">page</div></body></html>',
+            (new Collector())->snapshot()
+        );
+
+        self::assertStringEndsWith('</body></html>', $html);
+        self::assertLessThan(strpos($html, '</body>'), strpos($html, 'sonar-data'));
+    }
+
     public function testDoesNotInjectTwice(): void
     {
         $overlay = new Overlay();
@@ -36,6 +64,17 @@ final class OverlayTest extends TestCase
 
         $once = $overlay->injectInto('<html><body>page</body></html>', $snapshot);
         $twice = $overlay->injectInto($once, $snapshot);
+
+        self::assertSame($once, $twice);
+    }
+
+    public function testDoesNotInjectTwiceIntoAPageWithNoBodyTag(): void
+    {
+        $overlay = new Overlay();
+        $snapshot = (new Collector())->snapshot();
+
+        $once = $overlay->injectIntoPage('<h3>page</h3>', $snapshot);
+        $twice = $overlay->injectIntoPage($once, $snapshot);
 
         self::assertSame($once, $twice);
     }

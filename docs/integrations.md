@@ -127,7 +127,23 @@ them.
 
 `Sonar::inject()` returns the HTML untouched when there is no `</body>` or when
 an overlay is already there, which makes it safe to call from more than one
-place. Add the header names to `Access-Control-Expose-Headers` if the page may
+place. The first of those is deliberate: a response with no closing body tag may
+be a fragment meant to be swapped into a page that already has one, and fifteen
+kilobytes of overlay landing inside a partial helps nobody.
+
+Where the string is known to be a whole page — a hook that fires once per
+rendered document rather than once per response — say so and the overlay goes on
+the end instead of nowhere, which is what a template that spells no body tag
+needs:
+
+```php
+$html = Sonar::injectPage($html);
+```
+
+Only reach for it where nothing but a complete document can arrive. Everything
+else, `Sonar::inject()`.
+
+Add the header names to `Access-Control-Expose-Headers` if the page may
 read them across origins — that is what lets the panel show a query count for a
 cross-origin fetch:
 
