@@ -7,8 +7,6 @@ namespace hkyss\Sonar;
 use Closure;
 
 /**
- * Per-request counters: statements, aggregate sources, named timings and metadata.
- *
  * @phpstan-type SonarStatement array{sql: string, source: string, count: int, timeMs: float, maxMs: float}
  * @phpstan-type SonarSource array{count: int, timeMs: float}
  * @phpstan-type SonarSnapshot array{
@@ -53,10 +51,8 @@ final class Collector
     }
 
     /**
-     * Records one statement.
-     *
-     * Only the fingerprint is kept: literals are replaced by `?` before the
-     * statement is stored, so bind values never reach the page or the headers.
+     * Only the fingerprint is kept: literals are replaced by `?` before the statement is stored,
+     * so bind values never reach the page or the headers.
      */
     public function record(string $sql, float $timeMs, string $source = 'db'): void
     {
@@ -86,15 +82,12 @@ final class Collector
         $this->statements[$key]['maxMs'] = max($this->statements[$key]['maxMs'], $timeMs);
     }
 
-    /** Totals for a source that cannot report individual statements. */
     public function add(string $source, int $count, float $timeMs): void
     {
         $this->tally($source, $count, $timeMs);
     }
 
     /**
-     * Same as add(), resolved at snapshot time.
-     *
      * @param  callable(): array{count?: int|float, timeMs?: int|float}  $resolver
      */
     public function addUsing(string $source, callable $resolver): void
@@ -107,7 +100,7 @@ final class Collector
         $this->marks[$name] = ($this->marks[$name] ?? 0.0) + $timeMs;
     }
 
-    /** @return callable(): void Stops the timer and stores the elapsed time. */
+    /** @return callable(): void */
     public function timer(string $name): callable
     {
         $startedAt = microtime(true);

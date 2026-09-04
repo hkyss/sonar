@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace hkyss\Sonar;
 
 /**
- * Request-scoped entry point; every method is a no-op while the collector is off.
- *
  * @phpstan-import-type SonarSnapshot from Collector
  */
 final class Sonar
@@ -27,12 +25,8 @@ final class Sonar
     }
 
     /**
-     * Opens a new request: drops what was collected and restarts the clock.
-     *
-     * Under PHP-FPM boot() is enough, because the process handles one request
-     * and measures from REQUEST_TIME_FLOAT. Long-running runtimes (Octane,
-     * Swoole, RoadRunner, queue workers) reuse the process, so they have to
-     * call this at every request boundary or the figures keep accumulating.
+     * Long-running runtimes reuse the process, so they have to call this at every request
+     * boundary or the figures keep accumulating; under PHP-FPM boot() is enough.
      */
     public static function start(?Config $config = null): ?Collector
     {

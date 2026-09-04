@@ -6,7 +6,6 @@ namespace hkyss\Sonar;
 
 use Closure;
 
-/** Runtime settings: who sees the overlay and how much is kept. */
 final class Config
 {
     public const MODE_OFF = 'off';
@@ -27,12 +26,8 @@ final class Config
     }
 
     /**
-     * Accepts the loose values an env var or a config file may carry.
-     *
-     * Both fallbacks are deliberate. `gated` without a gate would show the
-     * overlay to everyone, and `on` in production would show it to anonymous
-     * visitors; either way the safe reading of an ambiguous setting is off.
-     * To run in production, use `gated` with a gate.
+     * `gated` without a gate would show the overlay to everyone and `on` in production would show
+     * it to anonymous visitors, so either reads as off.
      */
     public static function fromValue(mixed $value, ?callable $gate = null, int $maxQueries = 200, bool $production = false): self
     {

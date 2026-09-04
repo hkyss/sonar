@@ -37,8 +37,7 @@ class SonarServiceProvider extends ServiceProvider
     }
 
     /**
-     * Octane keeps the worker alive between requests, so the collector has to
-     * be reopened per request. Under PHP-FPM this event never fires.
+     * Octane keeps the worker alive between requests, and under PHP-FPM this event never fires.
      *
      * @param  Dispatcher  $events
      */
@@ -79,10 +78,7 @@ class SonarServiceProvider extends ServiceProvider
     }
 
     /**
-     * There is no default gate. Laravel has no universal notion of an
-     * administrator, and falling back to "any authenticated user" would hand
-     * the schema to anyone who can register. Without a callable sonar.gate,
-     * `gated` collapses to off.
+     * There is no default gate: without a callable sonar.gate, `gated` collapses to off.
      *
      * @return (callable(): bool)|null
      */

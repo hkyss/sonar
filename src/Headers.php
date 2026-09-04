@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace hkyss\Sonar;
 
 /**
- * Snapshot as response headers, so the overlay can report XHR requests too.
- *
  * @phpstan-import-type SonarSnapshot from Collector
  */
 final class Headers

@@ -1,9 +1,6 @@
 <?php
 
-/**
- * Symbols the optional integrations talk to. Neither Evolution CMS nor Octane
- * is a dev dependency, so static analysis needs to be told they exist.
- */
+/** Neither Evolution CMS nor Octane is a dev dependency, so static analysis is given the surface instead. */
 
 declare(strict_types=1);
 

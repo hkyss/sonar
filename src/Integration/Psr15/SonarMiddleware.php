@@ -16,11 +16,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 final class SonarMiddleware implements MiddlewareInterface
 {
     /**
-     * @param  bool  $startsRequest  Reopens the collector on the way in, so the
-     *                               figures stay per-request in a long-running
-     *                               server. Turn it off when this middleware is
-     *                               not the outermost one, or anything the
-     *                               middleware in front of it did would be lost.
+     * @param  bool  $startsRequest
      */
     public function __construct(
         private readonly StreamFactoryInterface $streams,

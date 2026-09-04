@@ -13,11 +13,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Events\QueryExecuted;
 
-/**
- * Evolution CMS 3 provider: injects through OnWebPagePrerender, which also
- * covers pages served from the EVO page cache, and gates on a manager login and
- * on the document's own content type.
- */
+/** OnWebPagePrerender also covers pages served from the EVO page cache. */
 class SonarEvolutionServiceProvider extends SonarServiceProvider
 {
     public function register(): void
@@ -43,20 +39,13 @@ class SonarEvolutionServiceProvider extends SonarServiceProvider
                 return;
             }
 
-            // The event fires once per rendered document, so what it carries is a
-            // whole page — including the ones whose template spells no body tag,
-            // which a fresh installation serves until it is given templates of
-            // its own.
+            // The event fires once per rendered document, so what it carries is a whole page, including
+            // the ones whose template spells no body tag.
             evo()->documentOutput = Sonar::injectPage((string) evo()->documentOutput);
         });
     }
 
-    /**
-     * A document declares its own content type, and the ones that are not HTML —
-     * a sitemap, a feed, anything built from a template and served as XML — reach
-     * the event like every other page. Read the way Evolution reads it when it
-     * sends the header: an empty field means a page.
-     */
+    /** Read the way Evolution reads it when it sends the header: an empty field means a page. */
     private static function documentContentType(): string
     {
         $type = evo()->documentObject['contentType'] ?? '';
@@ -64,10 +53,7 @@ class SonarEvolutionServiceProvider extends SonarServiceProvider
         return is_string($type) && $type !== '' ? $type : 'text/html';
     }
 
-    /**
-     * EVO's legacy driver reports its timings in seconds, Illuminate in
-     * milliseconds; queries are labelled and normalised accordingly.
-     */
+    /** EVO's legacy driver reports its timings in seconds, Illuminate in milliseconds. */
     protected function listenToQueries(mixed $events): void
     {
         $origin = new QueryOrigin();

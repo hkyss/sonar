@@ -7,8 +7,7 @@ namespace hkyss\Sonar\Tests;
 use hkyss\Sonar\Sonar;
 
 /**
- * Sonar::snapshot() is an empty array while the collector is off, so a test
- * that reads a figure out of it has to say it expected one.
+ * Sonar::snapshot() is an empty array while the collector is off.
  *
  * @phpstan-import-type SonarSnapshot from \hkyss\Sonar\Collector
  */

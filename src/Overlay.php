@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace hkyss\Sonar;
 
 /**
- * Inline styles, data and script inserted before the closing body tag.
- *
  * @phpstan-import-type SonarSnapshot from Collector
  */
 final class Overlay
@@ -18,10 +16,8 @@ final class Overlay
     }
 
     /**
-     * For one response among many, which may be a fragment of a page rather than
-     * a page: output with no closing body tag is left alone, because an overlay
-     * inside a partial swapped into a live document is fifteen kilobytes landing
-     * in a corner of it.
+     * Output with no closing body tag is left alone, because it may be a fragment swapped into a
+     * live document rather than a page.
      *
      * @param SonarSnapshot|array{} $snapshot
      */
@@ -31,11 +27,8 @@ final class Overlay
     }
 
     /**
-     * For output that is the whole page. A template is free to render a document
-     * with no body tag at all — Evolution CMS ships one — and there the overlay
-     * goes on the end rather than nowhere. Only a caller that knows the string is
-     * a complete page can tell that apart from a fragment, so it says so by
-     * calling this instead.
+     * A template is free to render a document with no body tag at all — Evolution CMS ships one —
+     * and only a caller that knows the string is a whole page can tell that from a fragment.
      *
      * @param SonarSnapshot|array{} $snapshot
      */

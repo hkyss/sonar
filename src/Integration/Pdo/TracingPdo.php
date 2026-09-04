@@ -8,7 +8,6 @@ use hkyss\Sonar\Sonar;
 use PDO;
 use PDOStatement;
 
-/** Drop-in PDO that reports every statement it runs. */
 final class TracingPdo extends PDO
 {
     private string $source = 'pdo';

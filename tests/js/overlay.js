@@ -9,11 +9,8 @@ const pristine = {
 }
 
 /**
- * Runs the overlay against a fresh document, the way it runs on a page: a
- * classic script that reads #sonar-data and appends itself to the body.
- *
- * The script wraps fetch and XHR on the global object and refuses to run
- * twice, so every load starts from the untouched originals.
+ * The script wraps fetch and XHR on the global object and refuses to run twice, so every load
+ * starts from the untouched originals.
  */
 export async function load(payload, { rawData, fetch } = {}) {
   globalThis.fetch = fetch ?? pristine.fetch
@@ -34,9 +31,8 @@ export async function load(payload, { rawData, fetch } = {}) {
 }
 
 /**
- * Overlay::html() encodes the payload with JSON_HEX_TAG, so a `</script>` in
- * the data cannot close the element it sits in. The harness has to do the same
- * or it tests its own escaping rather than the overlay's.
+ * Overlay::html() encodes the payload with JSON_HEX_TAG, so the harness has to do the same or
+ * it tests its own escaping rather than the overlay's.
  */
 function encode(payload) {
   return JSON.stringify(payload).replace(/</g, '\\u003C').replace(/>/g, '\\u003E')
@@ -47,7 +43,6 @@ export function frame() {
   return new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)))
 }
 
-/** A snapshot with everything at zero, to be spread over in each test. */
 export function snapshot(overrides = {}) {
   return {
     queries: { count: 0, timeMs: 0, sources: {} },

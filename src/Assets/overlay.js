@@ -1,6 +1,6 @@
 /**
- * Being a classic script injected inline at the end of the document, it runs
- * before any deferred module bundle, which is what lets it wrap fetch/XHR in time.
+ * A classic script injected inline at the end of the document runs before any deferred module
+ * bundle, which is what lets it wrap fetch/XHR in time.
  */
 (function () {
   'use strict';
