@@ -12,6 +12,8 @@ markup and its CSS are not: they are output, not API.
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-09-23
+
 ### Added
 
 - A `Pages` section: the pages this tab has loaded, newest first, with the
