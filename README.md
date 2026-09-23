@@ -9,7 +9,7 @@ Request performance overlay for PHP. A pill in the corner of the page reports
 what the request cost: database queries, server timings, browser metrics, and
 every XHR and fetch the page makes with its own server-side query count.
 
-<img src=".github/media/overlay.png" alt="The overlay open on a page, showing server timings, browser metrics, three tracked requests and a repeated query" width="470">
+<img src=".github/media/overlay.png" alt="The overlay open on a page, showing server timings, browser metrics, three tracked requests with their split, the pages loaded in the tab with their median, and a repeated query" width="470">
 
 - Framework-agnostic core. Integrations for Laravel, Evolution CMS 3, PSR-15 and plain PDO.
 - No runtime dependencies, no build step, no published assets: the CSS and the JS are inlined before `</body>`.
