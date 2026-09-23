@@ -12,6 +12,12 @@ markup and its CSS are not: they are output, not API.
 
 ## [Unreleased]
 
+### Added
+
+- Every request in the panel is split into server, database and network time,
+  read from the `X-Sonar-Time` and `X-Sonar-Query-Time` headers its response
+  already carried and the overlay never showed.
+
 ### Changed
 
 - The pill keeps the page's own figures once the page makes a request. The last

@@ -158,8 +158,13 @@ panel.
 | --- | --- |
 | `Queries` | Total across all sources, broken down per source |
 | `Database` / `PHP` / `Total` | Wall clock split between SQL and everything else |
-| `Requests` | XHR and fetch calls, each with its own server-side query count from the response headers |
+| `Requests` | XHR and fetch calls, each with its round trip and query count, split into server, database and network time |
 | `Repeated queries` | The same statement run more than once |
+
+A request's split comes from the headers on its response: `server` is
+`X-Sonar-Time`, `db` is `X-Sonar-Query-Time`, and `net` is whatever part of the
+round trip the server does not account for. A call to a third party carries no
+headers and gets no split.
 
 Identical statements collapse into one row with a counter, so an N+1 reads as
 `×40` rather than forty lines. What is shown is the fingerprint — literals

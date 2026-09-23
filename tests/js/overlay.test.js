@@ -174,6 +174,26 @@ describe('request tracking', () => {
     expect(root.textContent).toContain('/api/offers')
   })
 
+  it('splits the round trip into server, database and network time', async () => {
+    const root = await load(payload(), {
+      fetch: responds({ 'X-Sonar-Queries': '12', 'X-Sonar-Query-Time': '30', 'X-Sonar-Time': '95' }, () => 150),
+    })
+
+    await window.fetch('/api/offers')
+    await frame()
+
+    expect(root.querySelector('.sonar-split').textContent).toBe('server 95 ms · db 30 ms · net 55 ms')
+  })
+
+  it('gives a third-party response no split', async () => {
+    const root = await load(payload(), { fetch: responds({}, () => 150) })
+
+    await window.fetch('https://example.com/pixel')
+    await frame()
+
+    expect(root.querySelector('.sonar-split')).toBeNull()
+  })
+
   it('skips dev-server noise', async () => {
     await load(payload(), { fetch: responds() })
 

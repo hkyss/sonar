@@ -333,6 +333,26 @@
     return html;
   }
 
+  function renderSplit(request) {
+    if (request.serverMs === null) {
+      return '';
+    }
+
+    return (
+      '<div class="sonar-split">server <span class="' +
+      grade(request.serverMs, 300, 800) +
+      '">' +
+      ms(request.serverMs) +
+      '</span> · db <span class="' +
+      grade(request.dbMs, 100, 300) +
+      '">' +
+      ms(request.dbMs) +
+      '</span> · net <span class="sonar-dim">' +
+      ms(Math.max(0, request.ms - request.serverMs)) +
+      '</span></div>'
+    );
+  }
+
   function renderRequests() {
     var api = totals();
     var html = '<h4>Requests (' + state.requests.length + ') · ' + api.queries + ' SQL · ' + ms(api.ms) + '</h4>';
@@ -368,7 +388,8 @@
           (request.queries === null
             ? ''
             : '<span class="' + grade(request.queries, 30, 80) + '">' + request.queries + ' SQL</span>') +
-          '</div>';
+          '</div>' +
+          renderSplit(request);
       });
 
     return html;
