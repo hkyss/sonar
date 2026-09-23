@@ -145,11 +145,14 @@ see [docs/integrations.md](docs/integrations.md).
 
 ## Reading the overlay
 
-The pill reads the last request the application answered — its round trip and
-its query count — and shows the document's own figures until there has been one.
-On a page that navigates by `fetch`, that makes it the cost of the screen just
-loaded rather than a total that only ever climbs. Running totals across every
-request head the `Requests` section in the panel.
+The pill carries two readings. The first is the page — its load time and its
+query count — and it stays for as long as the page does. The second appears once
+the page makes a request: the last one the application answered, its round trip
+and its query count, and how many requests there have been. On a page that
+navigates by `fetch`, that makes it the cost of the screen just loaded rather
+than a total that only ever climbs, and the page's own figures never leave the
+corner. Running totals across every request head the `Requests` section in the
+panel.
 
 | Row | Meaning |
 | --- | --- |

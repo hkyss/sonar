@@ -12,6 +12,14 @@ markup and its CSS are not: they are output, not API.
 
 ## [Unreleased]
 
+### Changed
+
+- The pill keeps the page's own figures once the page makes a request. The last
+  request the application answered used to take their place; it now sits beside
+  them, so the corner says both what the page cost and what the last thing it
+  asked for cost, and the page's reading no longer vanishes at the first
+  background call.
+
 ## [1.1.0] — 2026-08-27
 
 ### Added

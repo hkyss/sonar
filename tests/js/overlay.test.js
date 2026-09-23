@@ -1,8 +1,16 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { frame, load, payload } from './overlay.js'
 
+let clock = 0
+
 beforeEach(() => {
+  clock = 0
+  vi.spyOn(performance, 'now').mockImplementation(() => clock)
   window.localStorage.clear()
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
 })
 
 describe('rendering', () => {
@@ -97,9 +105,60 @@ describe('bad input', () => {
 })
 
 /** The overlay wraps whatever fetch it finds, so the stub goes in before it loads. */
-function responds(headers = {}) {
-  return vi.fn(async () => new Response('{}', { status: 200, headers }))
+function responds(headers = {}, took = () => 0) {
+  return vi.fn(async (url) => {
+    clock += took(url)
+
+    return new Response('{}', { status: 200, headers })
+  })
 }
+
+function page(queries) {
+  return payload({ queries: { count: queries, timeMs: 1, sources: {} } })
+}
+
+describe('the pill', () => {
+  it('reads the page alone until the page makes a request', async () => {
+    const root = await load(page(3))
+
+    expect(root.querySelector('.sonar-page').textContent).toContain('3 SQL')
+    expect(root.querySelector('.sonar-last')).toBeNull()
+  })
+
+  it('keeps the page beside the last request the application answered', async () => {
+    const root = await load(page(3), { fetch: responds({ 'X-Sonar-Queries': '9' }, () => 48) })
+
+    await window.fetch('/api/offers')
+    await frame()
+
+    expect(root.querySelector('.sonar-page').textContent).toContain('3 SQL')
+    expect(root.querySelector('.sonar-last').textContent).toContain('48 ms · 9 SQL · 1 req')
+  })
+
+  it('reads the last request rather than a sum of them', async () => {
+    const queries = { '/api/cart': '9', '/api/offers': '4' }
+    const root = await load(page(3), {
+      fetch: vi.fn(async (url) => new Response('{}', { headers: { 'X-Sonar-Queries': queries[url] } })),
+    })
+
+    await window.fetch('/api/cart')
+    await window.fetch('/api/offers')
+    await frame()
+
+    expect(root.querySelector('.sonar-last').textContent).toContain('4 SQL · 2 req')
+  })
+
+  it('counts a third-party response without letting it be the reading', async () => {
+    const root = await load(page(3), { fetch: responds() })
+
+    await window.fetch('https://example.com/pixel')
+    await frame()
+
+    expect(root.querySelector('.sonar-page').textContent).toContain('3 SQL')
+    expect(root.querySelector('.sonar-last').textContent).not.toContain('SQL')
+    expect(root.querySelector('.sonar-last').textContent).toContain('1 req')
+  })
+})
 
 describe('request tracking', () => {
   it('records a fetch and reads the query count off the response', async () => {
@@ -113,28 +172,6 @@ describe('request tracking', () => {
     expect(window.__sonar.state.requests).toHaveLength(1)
     expect(window.__sonar.state.requests[0]).toMatchObject({ method: 'GET', url: '/api/offers', queries: 12 })
     expect(root.textContent).toContain('/api/offers')
-  })
-
-  it('lets the pill read the last request the application answered', async () => {
-    const root = await load(payload({ queries: { count: 3, timeMs: 1, sources: {} } }), {
-      fetch: responds({ 'X-Sonar-Queries': '9' }),
-    })
-
-    await window.fetch('/api/offers')
-    await frame()
-
-    expect(root.querySelector('.sonar-toggle').textContent).toContain('9 SQL')
-  })
-
-  it('ignores a third-party response when choosing what the pill reads', async () => {
-    const root = await load(payload({ queries: { count: 3, timeMs: 1, sources: {} } }), {
-      fetch: responds(),
-    })
-
-    await window.fetch('https://example.com/pixel')
-    await frame()
-
-    expect(root.querySelector('.sonar-toggle').textContent).toContain('3 SQL')
   })
 
   it('skips dev-server noise', async () => {
