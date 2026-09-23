@@ -100,6 +100,17 @@
   white-space: nowrap;
 }
 
+#sonar-console .sonar-summary {
+  padding: 1px 0;
+  color: #8b949e;
+}
+
+#sonar-console .sonar-slowest {
+  display: flex;
+  gap: 8px;
+  padding-bottom: 3px;
+}
+
 #sonar-console .sonar-split {
   padding: 0 0 2px 16px;
   color: #8b949e;

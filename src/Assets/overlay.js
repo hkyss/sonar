@@ -70,6 +70,31 @@
     return isNaN(parsed) ? null : parsed;
   }
 
+  function percentile(values, share) {
+    var sorted = values
+      .filter(function (value) {
+        return value !== null;
+      })
+      .sort(function (a, b) {
+        return a - b;
+      });
+
+    if (!sorted.length) {
+      return null;
+    }
+
+    var rank = share * (sorted.length - 1);
+    var below = sorted[Math.floor(rank)];
+
+    return below + (sorted[Math.ceil(rank)] - below) * (rank - Math.floor(rank));
+  }
+
+  function pluck(list, key) {
+    return list.map(function (item) {
+      return item[key];
+    });
+  }
+
   function track(method, url, status, duration, header) {
     if (IGNORED.test(String(url))) {
       return;
@@ -208,16 +233,10 @@
     );
   }
 
-  function totals() {
-    return state.requests.reduce(
-      function (carry, request) {
-        carry.ms += request.ms || 0;
-        carry.queries += request.queries || 0;
-
-        return carry;
-      },
-      { ms: 0, queries: 0 }
-    );
+  function sqlTotal() {
+    return state.requests.reduce(function (carry, request) {
+      return carry + (request.queries || 0);
+    }, 0);
   }
 
   /**
@@ -333,6 +352,42 @@
     return html;
   }
 
+  function renderSummary() {
+    if (state.requests.length < 2) {
+      return '';
+    }
+
+    var durations = pluck(state.requests, 'ms');
+    var median = percentile(durations, 0.5);
+    var p95 = percentile(durations, 0.95);
+    var slowest = state.requests.reduce(function (carry, request) {
+      return request.ms > carry.ms ? request : carry;
+    });
+
+    return (
+      '<div class="sonar-summary">median <span class="' +
+      grade(median, 300, 800) +
+      '">' +
+      ms(median) +
+      '</span> · p95 <span class="' +
+      grade(p95, 300, 800) +
+      '">' +
+      ms(p95) +
+      '</span> · max <span class="' +
+      grade(slowest.ms, 300, 800) +
+      '">' +
+      ms(slowest.ms) +
+      '</span></div>' +
+      '<div class="sonar-summary sonar-slowest"><span>slowest</span><span class="sonar-dim">' +
+      escapeHtml(slowest.method) +
+      '</span><span class="sonar-req-url" title="' +
+      escapeHtml(slowest.url) +
+      '">' +
+      escapeHtml(slowest.url) +
+      '</span></div>'
+    );
+  }
+
   function renderSplit(request) {
     if (request.serverMs === null) {
       return '';
@@ -354,12 +409,13 @@
   }
 
   function renderRequests() {
-    var api = totals();
-    var html = '<h4>Requests (' + state.requests.length + ') · ' + api.queries + ' SQL · ' + ms(api.ms) + '</h4>';
+    var html = '<h4>Requests (' + state.requests.length + ') · ' + sqlTotal() + ' SQL</h4>';
 
     if (!state.requests.length) {
       return html + '<div class="sonar-empty">nothing yet</div>';
     }
+
+    html += renderSummary();
 
     state.requests
       .slice()

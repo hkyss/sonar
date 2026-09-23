@@ -194,6 +194,31 @@ describe('request tracking', () => {
     expect(root.querySelector('.sonar-split')).toBeNull()
   })
 
+  it('summarises the requests and names the slowest', async () => {
+    const took = { '/api/a': 100, '/api/b': 500, '/api/c': 300, '/api/d': 200, '/api/e': 400 }
+    const root = await load(payload(), { fetch: responds({ 'X-Sonar-Queries': '1' }, (url) => took[url]) })
+
+    for (const url of Object.keys(took)) {
+      await window.fetch(url)
+    }
+
+    await frame()
+
+    const [figures, slowest] = root.querySelectorAll('.sonar-summary')
+
+    expect(figures.textContent).toBe('median 300 ms · p95 480 ms · max 500 ms')
+    expect(slowest.textContent).toContain('/api/b')
+  })
+
+  it('leaves a single request unsummarised', async () => {
+    const root = await load(payload(), { fetch: responds({ 'X-Sonar-Queries': '1' }) })
+
+    await window.fetch('/api/offers')
+    await frame()
+
+    expect(root.querySelector('.sonar-summary')).toBeNull()
+  })
+
   it('skips dev-server noise', async () => {
     await load(payload(), { fetch: responds() })
 

@@ -151,14 +151,13 @@ the page makes a request: the last one the application answered, its round trip
 and its query count, and how many requests there have been. On a page that
 navigates by `fetch`, that makes it the cost of the screen just loaded rather
 than a total that only ever climbs, and the page's own figures never leave the
-corner. Running totals across every request head the `Requests` section in the
-panel.
+corner.
 
 | Row | Meaning |
 | --- | --- |
 | `Queries` | Total across all sources, broken down per source |
 | `Database` / `PHP` / `Total` | Wall clock split between SQL and everything else |
-| `Requests` | XHR and fetch calls, each with its round trip and query count, split into server, database and network time |
+| `Requests` | XHR and fetch calls: the median, the 95th percentile and the slowest, then each call with its round trip and query count, split into server, database and network time |
 | `Repeated queries` | The same statement run more than once |
 
 A request's split comes from the headers on its response: `server` is

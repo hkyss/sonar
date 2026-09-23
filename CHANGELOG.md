@@ -17,6 +17,8 @@ markup and its CSS are not: they are output, not API.
 - Every request in the panel is split into server, database and network time,
   read from the `X-Sonar-Time` and `X-Sonar-Query-Time` headers its response
   already carried and the overlay never showed.
+- Once there are two requests, the `Requests` section opens with their median,
+  their 95th percentile and the slowest of them.
 
 ### Changed
 
@@ -25,6 +27,9 @@ markup and its CSS are not: they are output, not API.
   them, so the corner says both what the page cost and what the last thing it
   asked for cost, and the page's reading no longer vanishes at the first
   background call.
+- The `Requests` heading no longer adds up round trips. Requests overlap, and a
+  sum of overlapping round trips is not a time anything took; the median, the
+  95th percentile and the slowest request say what that sum stood in for.
 
 ## [1.1.0] — 2026-08-27
 
