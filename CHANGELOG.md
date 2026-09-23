@@ -14,6 +14,11 @@ markup and its CSS are not: they are output, not API.
 
 ### Added
 
+- A `Pages` section: the pages this tab has loaded, newest first, with the
+  server time, the query count and the load time of each, and the median across
+  them. One page load is one sample; the median of a few is what a page costs.
+  The pages live in `sessionStorage`, twenty at most, and `clear` forgets all
+  but the current one.
 - Every request in the panel is split into server, database and network time,
   read from the `X-Sonar-Time` and `X-Sonar-Query-Time` headers its response
   already carried and the overlay never showed.

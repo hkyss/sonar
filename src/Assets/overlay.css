@@ -116,6 +116,40 @@
   color: #8b949e;
 }
 
+#sonar-console .sonar-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 52px 32px 52px;
+  gap: 8px;
+}
+
+#sonar-console .sonar-grid > span {
+  overflow: hidden;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#sonar-console .sonar-grid > span:first-child {
+  text-align: left;
+}
+
+#sonar-console div.sonar-grid {
+  padding: 2px 0;
+  border-top: 1px solid #21262d;
+}
+
+#sonar-console div.sonar-grid > span:first-child {
+  color: #8b949e;
+}
+
+#sonar-console div.sonar-here > span:first-child {
+  color: #e6edf3;
+}
+
+#sonar-console div.sonar-median {
+  border-top-color: #30363d;
+}
+
 #sonar-console .sonar-sql {
   padding: 3px 0;
   color: #adbac7;
@@ -149,4 +183,15 @@
 
 #sonar-console .sonar-close:hover {
   color: #f85149;
+}
+
+#sonar-console .sonar-clear {
+  margin-left: 4px;
+  color: #6e7681;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+#sonar-console .sonar-clear:hover {
+  color: #58a6ff;
 }

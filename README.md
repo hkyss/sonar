@@ -158,12 +158,21 @@ corner.
 | `Queries` | Total across all sources, broken down per source |
 | `Database` / `PHP` / `Total` | Wall clock split between SQL and everything else |
 | `Requests` | XHR and fetch calls: the median, the 95th percentile and the slowest, then each call with its round trip and query count, split into server, database and network time |
+| `Pages` | The pages this tab has loaded, newest first, with their server time, query count and load time, and the median across them |
 | `Repeated queries` | The same statement run more than once |
 
 A request's split comes from the headers on its response: `server` is
 `X-Sonar-Time`, `db` is `X-Sonar-Query-Time`, and `net` is whatever part of the
 round trip the server does not account for. A call to a third party carries no
 headers and gets no split.
+
+One page load is one sample and says little on its own; reload a page a few
+times and the median is what it costs. The pages live in the tab's
+`sessionStorage` under `sonar:pages`, twenty at most, so they survive a reload
+and a click through the site and are gone with the tab. What is kept of a page
+is its path, the first forty characters of its query string and its three
+figures. `clear` forgets every page but the current one, which is where a
+comparison after a change starts.
 
 Identical statements collapse into one row with a counter, so an N+1 reads as
 `×40` rather than forty lines. What is shown is the fingerprint — literals

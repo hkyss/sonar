@@ -10,7 +10,9 @@
   }
 
   var STORAGE_KEY = 'sonar:open';
+  var PAGES_KEY = 'sonar:pages';
   var MAX_REQUESTS = 100;
+  var MAX_PAGES = 20;
   var IGNORED = /(@vite|@react-refresh|__vite|\.hot-update\.|\/node_modules\/)/;
 
   var payload = {};
@@ -24,7 +26,7 @@
   var server = payload.server || {};
   var prefix = payload.headerPrefix || 'X-Sonar-';
 
-  var state = { requests: [], client: {}, open: false };
+  var state = { requests: [], pages: [], client: {}, open: false };
 
   try {
     state.open = window.localStorage.getItem(STORAGE_KEY) === '1';
@@ -70,6 +72,10 @@
     return isNaN(parsed) ? null : parsed;
   }
 
+  function count(value) {
+    return value === null ? '—' : Math.round(value);
+  }
+
   function percentile(values, share) {
     var sorted = values
       .filter(function (value) {
@@ -94,6 +100,57 @@
       return item[key];
     });
   }
+
+  var visit = {
+    url: shortUrl(window.location.href),
+    serverMs: number((server.time || {}).totalMs),
+    queries: number((server.queries || {}).count),
+    loadMs: null,
+  };
+
+  function storedPages() {
+    var stored = null;
+
+    try {
+      stored = JSON.parse(window.sessionStorage.getItem(PAGES_KEY));
+    } catch (error) {
+      return [];
+    }
+
+    if (!Array.isArray(stored)) {
+      return [];
+    }
+
+    return stored
+      .filter(function (page) {
+        return page !== null && typeof page === 'object' && typeof page.url === 'string';
+      })
+      .map(function (page) {
+        return {
+          url: page.url,
+          serverMs: number(page.serverMs),
+          queries: number(page.queries),
+          loadMs: number(page.loadMs),
+        };
+      });
+  }
+
+  function savePages() {
+    try {
+      window.sessionStorage.setItem(PAGES_KEY, JSON.stringify(state.pages));
+    } catch (error) {
+      return;
+    }
+  }
+
+  function clearPages() {
+    state.pages = [visit];
+    savePages();
+    render();
+  }
+
+  state.pages = storedPages().concat([visit]).slice(-MAX_PAGES);
+  savePages();
 
   function track(method, url, status, duration, header) {
     if (IGNORED.test(String(url))) {
@@ -190,6 +247,8 @@
     state.client.ttfb = entry.responseStart;
     state.client.dom = entry.domContentLoadedEventEnd || null;
     state.client.load = entry.loadEventEnd || null;
+    visit.loadMs = state.client.load;
+    savePages();
     render();
   }
 
@@ -451,6 +510,62 @@
     return html;
   }
 
+  function renderPageRow(label, figures, className) {
+    return (
+      '<div class="sonar-grid ' +
+      className +
+      '"><span title="' +
+      escapeHtml(label) +
+      '">' +
+      escapeHtml(label) +
+      '</span><span class="' +
+      grade(figures.serverMs, 400, 1000) +
+      '">' +
+      ms(figures.serverMs) +
+      '</span><span class="' +
+      grade(figures.queries, 40, 100) +
+      '">' +
+      count(figures.queries) +
+      '</span><span class="' +
+      grade(figures.loadMs, 1500, 3000) +
+      '">' +
+      ms(figures.loadMs) +
+      '</span></div>'
+    );
+  }
+
+  function renderPages() {
+    var html =
+      '<h4 class="sonar-grid"><span>Pages (' +
+      state.pages.length +
+      ')' +
+      (state.pages.length > 1
+        ? ' <button type="button" class="sonar-clear" title="Forget every page but this one">clear</button>'
+        : '') +
+      '</span><span>Server</span><span>SQL</span><span>Load</span></h4>';
+
+    state.pages
+      .slice()
+      .reverse()
+      .forEach(function (page) {
+        html += renderPageRow(page.url, page, page === visit ? 'sonar-here' : '');
+      });
+
+    if (state.pages.length > 1) {
+      html += renderPageRow(
+        'median',
+        {
+          serverMs: percentile(pluck(state.pages, 'serverMs'), 0.5),
+          queries: percentile(pluck(state.pages, 'queries'), 0.5),
+          loadMs: percentile(pluck(state.pages, 'loadMs'), 0.5),
+        },
+        'sonar-median'
+      );
+    }
+
+    return html;
+  }
+
   function renderStatements() {
     var statements = server.statements || [];
 
@@ -501,6 +616,7 @@
         renderServer() +
         renderClient() +
         renderRequests() +
+        renderPages() +
         renderStatements() +
         '</div>' +
         renderPill();
@@ -519,6 +635,12 @@
       root.querySelector('.sonar-close').addEventListener('click', function () {
         root.remove();
       });
+
+      var clear = root.querySelector('.sonar-clear');
+
+      if (clear) {
+        clear.addEventListener('click', clearPages);
+      }
     });
   }
 

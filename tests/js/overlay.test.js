@@ -7,6 +7,8 @@ beforeEach(() => {
   clock = 0
   vi.spyOn(performance, 'now').mockImplementation(() => clock)
   window.localStorage.clear()
+  window.sessionStorage.clear()
+  window.history.replaceState(null, '', '/')
 })
 
 afterEach(() => {
@@ -226,6 +228,97 @@ describe('request tracking', () => {
     await frame()
 
     expect(window.__sonar.state.requests).toHaveLength(0)
+  })
+})
+
+function visit(url, server = {}) {
+  window.history.replaceState(null, '', url)
+
+  return load(payload(server))
+}
+
+function rows(root) {
+  return Array.from(root.querySelectorAll('div.sonar-grid')).map((row) =>
+    Array.from(row.children).map((cell) => cell.textContent),
+  )
+}
+
+describe('page history', () => {
+  it('lists the pages this tab has loaded, newest first', async () => {
+    await visit('/katalog.html', { queries: { count: 61, timeMs: 1, sources: {} }, time: { totalMs: 98, phpMs: 97 } })
+    const root = await visit('/korzina.html', { queries: { count: 48, timeMs: 1, sources: {} } })
+
+    expect(rows(root).slice(0, 2)).toEqual([
+      ['/korzina.html', '0 ms', '48', '—'],
+      ['/katalog.html', '98 ms', '61', '—'],
+    ])
+    expect(root.querySelector('.sonar-here').textContent).toContain('/korzina.html')
+  })
+
+  it('takes the median across the pages', async () => {
+    await visit('/a.html', { queries: { count: 10, timeMs: 1, sources: {} }, time: { totalMs: 100, phpMs: 99 } })
+    await visit('/b.html', { queries: { count: 60, timeMs: 1, sources: {} }, time: { totalMs: 600, phpMs: 599 } })
+    const root = await visit('/c.html', {
+      queries: { count: 20, timeMs: 1, sources: {} },
+      time: { totalMs: 200, phpMs: 199 },
+    })
+
+    expect(rows(root).pop()).toEqual(['median', '200 ms', '20', '—'])
+  })
+
+  it('writes the load time down once the browser reports it', async () => {
+    vi.spyOn(performance, 'getEntriesByType').mockReturnValue([
+      { responseStart: 40, domContentLoadedEventEnd: 120, loadEventEnd: 300 },
+    ])
+
+    const root = await visit('/katalog.html')
+
+    expect(rows(root)[0]).toEqual(['/katalog.html', '0 ms', '0', '300 ms'])
+    expect(JSON.parse(window.sessionStorage.getItem('sonar:pages'))[0]).toMatchObject({ loadMs: 300 })
+  })
+
+  it('forgets every page but this one on clear', async () => {
+    await visit('/a.html')
+    await visit('/b.html')
+    const root = await visit('/c.html')
+
+    root.querySelector('.sonar-clear').click()
+    await frame()
+
+    expect(rows(root)).toEqual([['/c.html', '0 ms', '0', '—']])
+    expect(JSON.parse(window.sessionStorage.getItem('sonar:pages'))).toHaveLength(1)
+  })
+
+  it('keeps the last twenty', async () => {
+    for (let i = 1; i <= 22; i++) {
+      await visit('/page-' + i + '.html')
+    }
+
+    const stored = JSON.parse(window.sessionStorage.getItem('sonar:pages'))
+
+    expect(stored).toHaveLength(20)
+    expect(stored[0].url).toBe('/page-3.html')
+  })
+
+  it('does not let a stored page carry markup', async () => {
+    window.sessionStorage.setItem(
+      'sonar:pages',
+      JSON.stringify([{ url: '<img src=x onerror=alert(1)>', serverMs: '<b>1</b>', queries: 1, loadMs: 1 }]),
+    )
+
+    const root = await visit('/katalog.html')
+
+    expect(root.querySelector('img')).toBeNull()
+    expect(root.querySelector('div.sonar-grid b')).toBeNull()
+    expect(root.textContent).toContain('<img src=x onerror=alert(1)>')
+  })
+
+  it('starts over when what is stored is not a history', async () => {
+    window.sessionStorage.setItem('sonar:pages', '{not json')
+
+    const root = await visit('/katalog.html')
+
+    expect(rows(root)).toEqual([['/katalog.html', '0 ms', '0', '—']])
   })
 })
 
