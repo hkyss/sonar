@@ -12,6 +12,13 @@ markup and its CSS are not: they are output, not API.
 
 ## [Unreleased]
 
+## [1.2.1] — 2026-10-29
+
+### Changed
+
+- The README shows the 1.2.0 overlay, with the `Pages` section and the split
+  request times. Nothing that runs has changed.
+
 ## [1.2.0] — 2026-09-23
 
 ### Added
