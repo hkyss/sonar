@@ -21,6 +21,8 @@ use Closure;
  */
 final class Collector
 {
+    private const LITERAL = '/(`(?:[^`]++|``)*+`)|\'(?:[^\'\\\\]++|\\\\.|\'\')*+(?:\'|$)|"(?:[^"\\\\]++|\\\\.|"")*+(?:"|$)/s';
+
     /** @var array<string, SonarStatement> */
     private array $statements = [];
 
@@ -193,7 +195,11 @@ final class Collector
 
     private static function fingerprint(string $sql): string
     {
-        $sql = preg_replace('/\'[^\']*\'|"[^"]*"/', '?', $sql) ?? $sql;
+        $sql = preg_replace_callback(
+            self::LITERAL,
+            static fn (array $match): string => ($match[1] ?? '') !== '' ? $match[1] : '?',
+            $sql
+        ) ?? $sql;
         $sql = preg_replace('/\b\d+\b/', '?', $sql) ?? $sql;
         $sql = preg_replace('/\?(\s*,\s*\?)+/', '?', $sql) ?? $sql;
 

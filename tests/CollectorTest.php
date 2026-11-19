@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace hkyss\Sonar\Tests;
 
 use hkyss\Sonar\Collector;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class CollectorTest extends TestCase
@@ -33,6 +34,32 @@ final class CollectorTest extends TestCase
 
         self::assertSame('select * from `users` where `email` = ? and `id` = ?', $statement);
         self::assertStringNotContainsString('ada@example.com', json_encode($collector->snapshot()) ?: '');
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function literals(): iterable
+    {
+        yield 'escaped single quote' => ["select * from `t` where `a` = 'it\\'s secret' and `b` = 1", 'select * from `t` where `a` = ? and `b` = ?'];
+        yield 'doubled single quote' => ["select * from `t` where `a` = 'it''s secret' and `b` = 1", 'select * from `t` where `a` = ? and `b` = ?'];
+        yield 'escaped double quote' => ['select * from `t` where `a` = "say \\"secret\\" now" and `b` = 1', 'select * from `t` where `a` = ? and `b` = ?'];
+        yield 'doubled double quote' => ['select * from `t` where `a` = "say ""secret"" now" and `b` = 1', 'select * from `t` where `a` = ? and `b` = ?'];
+        yield 'backslash at the end' => ["select * from `t` where `a` = 'secret\\\\' and `b` = 'other'", 'select * from `t` where `a` = ? and `b` = ?'];
+        yield 'other quote inside single' => ["select * from `t` where `a` = 'say \"secret\" now' and `b` = 1", 'select * from `t` where `a` = ? and `b` = ?'];
+        yield 'other quote inside double' => ['select * from `t` where `a` = "it\'s secret" and `b` = 1', 'select * from `t` where `a` = ? and `b` = ?'];
+        yield 'unterminated' => ["select * from `t` where `a` = 'secret tail", 'select * from `t` where `a` = ?'];
+        yield 'quote inside an identifier' => ["select `it's` from `t` where `a` = 'secret'", "select `it's` from `t` where `a` = ?"];
+    }
+
+    #[DataProvider('literals')]
+    public function testMasksTheWholeLiteral(string $sql, string $expected): void
+    {
+        $collector = new Collector();
+        $collector->record($sql, 1.0);
+
+        $statement = $collector->topStatements()[0]['sql'];
+
+        self::assertSame($expected, $statement);
+        self::assertStringNotContainsString('secret', $statement);
     }
 
     public function testKeepsDifferentShapesApart(): void
