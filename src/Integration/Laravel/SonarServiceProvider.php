@@ -73,8 +73,14 @@ class SonarServiceProvider extends ServiceProvider
             $config->get('sonar.enabled', false),
             $this->gate(),
             self::maxQueries($config),
-            $this->inProduction()
+            $this->inProduction(),
+            $this->inConsole()
         );
+    }
+
+    protected function inConsole(): bool
+    {
+        return $this->app->runningInConsole();
     }
 
     /**

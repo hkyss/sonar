@@ -30,7 +30,7 @@ autoloader cannot find. Copy the imports as written.
 ## Enable
 
 `SONAR` takes `false` (off), `true` (visible to everyone) or `gated` (collected
-always, shown only to whoever the gate allows).
+on web requests, shown only to whoever the gate allows).
 
 ```dotenv
 SONAR=true
@@ -42,6 +42,8 @@ Two settings refuse to do the dangerous thing:
 - `true` is ignored when the environment is production, because it shows the
   overlay to anonymous visitors. To look at a live site, use `gated`.
 - `gated` without a gate is off. There is no default gate to fall back on.
+- `gated` collects nothing in the console, so queue workers and artisan
+  commands are left alone.
 
 ## Laravel
 
@@ -187,7 +189,7 @@ Timing and Performance Observer APIs.
 - The overlay script is a classic inline script, so it wraps `fetch` and `XHR`
   before any deferred module bundle runs.
 - Cross-origin XHR needs `Access-Control-Expose-Headers`; the middlewares set it.
-- `gated` collects on every request, whether or not anyone can see the result.
+- `gated` collects on every web request, whether or not anyone can see the result.
   Keep `SONAR` unset in production unless that cost is acceptable.
 - The Laravel middleware is attached on `RouteMatched`, so a request that
   matches no route — a 404, most notably — gets neither the overlay nor the

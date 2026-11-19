@@ -32,9 +32,10 @@ Sonar::boot(Config::fromValue(
 ));
 ```
 
-Two rules are enforced for you: `gated` without a gate is off, and `true` in
-production is off. There is deliberately no way to override them from
-configuration — a system that wants an overlay on a live site uses `gated`.
+Three rules are enforced for you: `gated` without a gate is off, `gated` in the
+console is off (`console: true`), and `true` in production is off. There is
+deliberately no way to override them from configuration — a system that wants
+an overlay on a live site uses `gated`.
 
 ### Long-running processes
 

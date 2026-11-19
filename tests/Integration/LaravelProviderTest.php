@@ -27,7 +27,7 @@ final class LaravelProviderTest extends TestCase
     {
         Sonar::reset();
 
-        $this->app = new Container();
+        $this->app = new FakeApplication();
         $this->events = new Dispatcher($this->app);
         $this->app->instance('events', $this->events);
         $this->app->instance('config', new ConfigRepository(['sonar' => ['enabled' => true]]));
@@ -76,6 +76,33 @@ final class LaravelProviderTest extends TestCase
 
         self::assertTrue(Sonar::collecting());
         self::assertTrue(Sonar::visible());
+    }
+
+    public function testGatedDoesNotCollectInTheConsole(): void
+    {
+        $app = new FakeApplication(console: true);
+        $app->instance('events', $this->events);
+        $app->instance('config', new ConfigRepository([
+            'sonar' => ['enabled' => 'gated', 'gate' => static fn (): bool => true],
+        ]));
+
+        (new SonarServiceProvider($app))->register();
+
+        self::assertFalse(Sonar::collecting());
+        self::assertSame([], $this->events->getListeners(QueryExecuted::class));
+    }
+
+    public function testGatedCollectsInAWebRequest(): void
+    {
+        $app = new FakeApplication(console: false);
+        $app->instance('events', $this->events);
+        $app->instance('config', new ConfigRepository([
+            'sonar' => ['enabled' => 'gated', 'gate' => static fn (): bool => true],
+        ]));
+
+        (new SonarServiceProvider($app))->register();
+
+        self::assertTrue(Sonar::collecting());
     }
 
     public function testProductionIgnoresTheOnMode(): void
