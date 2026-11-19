@@ -57,20 +57,22 @@ class SonarEvolutionServiceProvider extends SonarServiceProvider
     protected function listenToQueries(mixed $events): void
     {
         $origin = new QueryOrigin();
+        $db = $this->app->bound('db') ? $this->app->make('db') : null;
 
-        if ($this->app->bound('db')) {
-            /** @var DatabaseManager $db */
-            $db = $this->app->make('db');
+        if ($db instanceof DatabaseManager) {
             $db->connection()->beforeExecuting(static fn () => $origin->mark());
         }
 
-        $events->listen(QueryExecuted::class, static function (QueryExecuted $event) use ($origin): void {
-            $illuminate = $origin->take();
+        $events->listen(QueryExecuted::class, static function (QueryExecuted $event) use ($origin, $db): void {
+            $legacy = $origin->legacy(
+                (string) $event->connectionName,
+                $db instanceof DatabaseManager ? $db->getDefaultConnection() : (string) $event->connectionName
+            );
 
             Sonar::record(
                 $event->sql,
-                $illuminate ? (float) $event->time : (float) $event->time * 1000,
-                $illuminate ? 'eloquent' : 'evo'
+                $legacy ? (float) $event->time * 1000 : (float) $event->time,
+                $legacy ? 'evo' : 'eloquent'
             );
         });
     }

@@ -6,7 +6,7 @@ namespace hkyss\Sonar\Integration\Evolution;
 
 /**
  * Only `Connection::run()` fires the beforeExecuting callbacks, so a QueryExecuted event that
- * arrives without a mark came from EVO's legacy driver.
+ * arrives without a mark came from EVO's legacy driver, which reports on the default connection only.
  */
 final class QueryOrigin
 {
@@ -15,6 +15,11 @@ final class QueryOrigin
     public function mark(): void
     {
         $this->illuminate = true;
+    }
+
+    public function legacy(string $connection, string $default): bool
+    {
+        return !$this->take() && $connection === $default;
     }
 
     public function take(): bool
