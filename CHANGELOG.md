@@ -12,6 +12,20 @@ markup and its CSS are not: they are output, not API.
 
 ## [Unreleased]
 
+## [1.2.2] — 2026-11-19
+
+### Fixed
+
+- A string literal is masked whole in the stored statements. A value with an
+  escaped quote (`\'`, `\"`) or a doubled one (`''`, `""`) used to leave its
+  tail in the statement list and the headers. A literal left open at the end of
+  a statement is masked to the end.
+- `SONAR=gated` collects nothing in the console, so artisan commands and queue
+  workers are left alone. `Config::fromValue()` takes a new `console` argument
+  for this, and `fromEnv()` and the Laravel and Evolution CMS providers set it.
+- In the Evolution CMS integration, queries on a connection other than the
+  default one were timed a thousand times too high.
+
 ## [1.2.1] — 2026-10-29
 
 ### Changed
