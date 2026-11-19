@@ -22,4 +22,22 @@ final class QueryOriginTest extends TestCase
         self::assertTrue($origin->take());
         self::assertFalse($origin->take());
     }
+
+    public function testAnUnmarkedQueryOnTheDefaultConnectionIsLegacy(): void
+    {
+        self::assertTrue((new QueryOrigin())->legacy('main', 'main'));
+    }
+
+    public function testAnUnmarkedQueryOnAnotherConnectionIsNotLegacy(): void
+    {
+        self::assertFalse((new QueryOrigin())->legacy('reports', 'main'));
+    }
+
+    public function testAMarkedQueryIsNotLegacy(): void
+    {
+        $origin = new QueryOrigin();
+        $origin->mark();
+
+        self::assertFalse($origin->legacy('main', 'main'));
+    }
 }

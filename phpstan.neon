@@ -11,3 +11,6 @@ parameters:
         -
             identifier: argument.type
             path: tests/Integration/LaravelProviderTest.php
+        -
+            identifier: argument.type
+            path: tests/Integration/EvolutionQueryTimingTest.php
