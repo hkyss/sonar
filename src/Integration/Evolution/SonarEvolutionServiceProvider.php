@@ -82,9 +82,15 @@ class SonarEvolutionServiceProvider extends SonarServiceProvider
 
         return Config::fromValue(
             $config->get('sonar.enabled', false),
-            static fn (): bool => PHP_SAPI !== 'cli' && evo()->isLoggedIn('mgr'),
+            static fn (): bool => !Config::isConsole() && evo()->isLoggedIn('mgr'),
             self::maxQueries($config),
-            $this->inProduction()
+            $this->inProduction(),
+            $this->inConsole()
         );
+    }
+
+    protected function inConsole(): bool
+    {
+        return Config::isConsole();
     }
 }

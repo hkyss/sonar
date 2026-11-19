@@ -50,6 +50,26 @@ final class ConfigTest extends TestCase
         self::assertTrue($config->visible());
     }
 
+    public function testGatedCollectsNothingInTheConsole(): void
+    {
+        $config = Config::fromValue('gated', static fn (): bool => true, console: true);
+
+        self::assertSame(Config::MODE_OFF, $config->mode());
+        self::assertFalse($config->collecting());
+    }
+
+    public function testGatedCollectsOnTheWeb(): void
+    {
+        $config = Config::fromValue('gated', static fn (): bool => true, console: false);
+
+        self::assertTrue($config->collecting());
+    }
+
+    public function testTheOnModeIsLeftAloneInTheConsole(): void
+    {
+        self::assertSame(Config::MODE_ON, Config::fromValue(true, null, console: true)->mode());
+    }
+
     public function testReadsProductionFromTheEnvironment(): void
     {
         $_ENV['APP_ENV'] = 'production';

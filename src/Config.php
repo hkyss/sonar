@@ -27,9 +27,10 @@ final class Config
 
     /**
      * `gated` without a gate would show the overlay to everyone and `on` in production would show
-     * it to anonymous visitors, so either reads as off.
+     * it to anonymous visitors, so either reads as off. `gated` means a request somebody can see,
+     * so it is off as well in the console, where there is nobody to show it to.
      */
-    public static function fromValue(mixed $value, ?callable $gate = null, int $maxQueries = 200, bool $production = false): self
+    public static function fromValue(mixed $value, ?callable $gate = null, int $maxQueries = 200, bool $production = false, bool $console = false): self
     {
         $mode = self::resolveMode($value);
 
@@ -37,7 +38,7 @@ final class Config
             $mode = self::MODE_OFF;
         }
 
-        if ($mode === self::MODE_GATED && $gate === null) {
+        if ($mode === self::MODE_GATED && ($gate === null || $console)) {
             $mode = self::MODE_OFF;
         }
 
@@ -50,8 +51,14 @@ final class Config
             self::env($prefix),
             $gate,
             (int) (self::env($prefix . '_MAX_QUERIES') ?? 200),
-            self::isProduction()
+            self::isProduction(),
+            self::isConsole()
         );
+    }
+
+    public static function isConsole(): bool
+    {
+        return in_array(PHP_SAPI, ['cli', 'phpdbg'], true);
     }
 
     /** Reads APP_ENV where it exists; absent, the environment is unknown and not assumed to be production. */
